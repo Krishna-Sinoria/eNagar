@@ -69,21 +69,10 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Profile",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
-                modifier = Modifier.background(
-                    Brush.horizontalGradient(
-                        listOf(Color(0xFF2E7D32), Color(0xFF81C784))
-                    )
-                )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -129,7 +118,6 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -148,11 +136,9 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
             // Logout Button
             Button(
                 onClick = { /* TODO: Add logout logic */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth(0.7f)
             ) {
-                Text("Logout", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -176,4 +162,3 @@ fun ProfileRow(label: String, value: String) {
         )
     }
 }
-

@@ -69,7 +69,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -98,55 +97,36 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
 
     // Dummy data
     val recentReports = listOf(
-        HomeReport(1, "Pothole on Main Street", "Reported", Icons.Default.ReportProblem, Color(0xFFEF5350)),
-        HomeReport(2, "Streetlight Outage", "In Progress", Icons.Default.Lightbulb, Color(0xFFFFA726)),
-        HomeReport(3, "Broken Park Bench", "Resolved", Icons.Default.Done, Color(0xFF66BB6A))
     )
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFF2E7D32), Color(0xFF81C784)) // same gradient as previous screens
-                        )
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Citizen",
+                        fontWeight = FontWeight.Bold,
                     )
-            ) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            "Citizen",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                },
+                navigationIcon = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Default.Language,
+                            contentDescription = "Language",
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                Icons.Default.Language,
-                                contentDescription = "Language",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent // important, so gradient shows
-                    )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings",
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 )
-            }
-        }
-        ,
+            )
         bottomBar = {
             BottomNavBar(navController)
         },
@@ -185,10 +165,7 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2E7D32),
-                        contentColor = Color.White
                     )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Report", modifier = Modifier.size(22.dp))
@@ -236,7 +213,6 @@ fun MapSearchSection() {
             .fillMaxWidth()
             .height(200.dp),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -257,11 +233,6 @@ fun MapSearchSection() {
                     .align(Alignment.TopCenter),
                 shape = CircleShape,
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White.copy(alpha = 0.95f),
-                    unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    cursorColor = Color(0xFF2E7D32),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -318,9 +289,6 @@ fun BottomNavBar(navController: NavController) {
     var selectedItem by remember { mutableStateOf(0) }
 
     NavigationBar(
-        containerColor = Brush.horizontalGradient(
-            listOf(Color(0xFF2E7D32), Color(0xFF81C784))
-        ).toColor(),
         tonalElevation = 8.dp
     ) {
         items.forEachIndexed { index, (route, icon) ->
@@ -334,13 +302,11 @@ fun BottomNavBar(navController: NavController) {
                     Icon(
                         icon,
                         contentDescription = route,
-                        tint = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
                     )
                 },
                 label = {
                     Text(
                         route.substringAfterLast('.'),
-                        color = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
                     )
                 }
             )
@@ -348,5 +314,3 @@ fun BottomNavBar(navController: NavController) {
     }
 }
 
-// Extension function for gradient
-fun Brush.toColor(): Color = Color(0xFF2E7D32)

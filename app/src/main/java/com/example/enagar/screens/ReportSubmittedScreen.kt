@@ -3,7 +3,6 @@ package com.example.enagar.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,14 +28,12 @@ import androidx.core.animation.OvershootInterpolator
 import androidx.navigation.NavController
 import com.example.enagar.R
 import com.example.enagar.navigation.Screen
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportSubmittedScreen(navController: NavController) {
-
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -61,27 +58,23 @@ fun ReportSubmittedScreen(navController: NavController) {
         for (i in 0..steps) {
             illustrationAlpha = i / steps.toFloat()
             illustrationOffsetY = 50 * (1 - i / steps.toFloat())
-            kotlinx.coroutines.delay((duration / steps).toLong())
         }
     }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Report Submitted", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
                 modifier = Modifier.background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(Color(0xFF2E7D32), Color(0xFF81C784))
                     )
                 )
             )
-        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -116,7 +109,6 @@ fun ReportSubmittedScreen(navController: NavController) {
                 text = "Thank you for reporting!",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2E7D32),
                 textAlign = TextAlign.Center
             )
 
@@ -126,7 +118,6 @@ fun ReportSubmittedScreen(navController: NavController) {
                 text = "Your report has been successfully submitted. Our team will review it and take necessary action soon.",
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
-                color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
@@ -135,14 +126,12 @@ fun ReportSubmittedScreen(navController: NavController) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFE8F5E9), RoundedCornerShape(8.dp))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "Report ID: $reportId",
-                    color = Color(0xFF2E7D32),
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = {
@@ -150,18 +139,15 @@ fun ReportSubmittedScreen(navController: NavController) {
                     val clip = ClipData.newPlainText("Report ID", reportId)
                     clipboard.setPrimaryClip(clip)
                 }) {
-                    Text("Copy", color = Color(0xFF2E7D32))
                 }
             }
 
             Spacer(Modifier.height(32.dp))
 
-
             Button(
                 onClick = { navController.navigate(Screen.Home.route) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White)
             ) {
                 Text("Go to Home")
             }
@@ -172,7 +158,6 @@ fun ReportSubmittedScreen(navController: NavController) {
                 onClick = { navController.navigate(Screen.MyReports.route) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF2E7D32))
             ) {
                 Text("View My Reports")
             }
