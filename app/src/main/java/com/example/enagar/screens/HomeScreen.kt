@@ -1,0 +1,352 @@
+//package com.example.enagar.screens
+//
+//import androidx.compose.foundation.layout.*
+//import androidx.compose.material3.*
+//import androidx.compose.runtime.Composable
+//import androidx.compose.ui.Modifier
+//import androidx.compose.ui.unit.dp
+//import androidx.navigation.NavController
+//import com.example.enagar.navigation.Screen
+//
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun HomeScreen(navController: NavController, padding1: Modifier) {
+//    Scaffold(
+//        topBar = { TopAppBar(title = { Text("eNagar - Home") }) }
+//    ) { padding ->
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(padding)
+//                .padding(16.dp),
+//            verticalArrangement = Arrangement.spacedBy(16.dp)
+//        ) {
+//            Button(
+//                onClick = { navController.navigate(Screen.ReportIssue.route) },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text("Report an Issue")
+//            }
+//
+//            Button(
+//                onClick = { navController.navigate(Screen.MyReports.route) },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text("My Reports")
+//            }
+//
+//            Button(
+//                onClick = { navController.navigate(Screen.Notifications.route) },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text("Notifications")
+//            }
+//
+//            Button(
+//                onClick = { navController.navigate(Screen.Profile.route) },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text("Profile")
+//            }
+//        }
+//    }
+//}
+
+package com.example.enagar.screens
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.enagar.R
+import com.example.enagar.navigation.Screen
+
+// Data class for reports
+data class HomeReport(
+    val id: Int,
+    val title: String,
+    val status: String,
+    val icon: ImageVector,
+    val iconBgColor: Color
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
+
+    val colorScheme = MaterialTheme.colorScheme
+
+    // Dummy data
+    val recentReports = listOf(
+        HomeReport(1, "Pothole on Main Street", "Reported", Icons.Default.ReportProblem, Color(0xFFEF5350)),
+        HomeReport(2, "Streetlight Outage", "In Progress", Icons.Default.Lightbulb, Color(0xFFFFA726)),
+        HomeReport(3, "Broken Park Bench", "Resolved", Icons.Default.Done, Color(0xFF66BB6A))
+    )
+
+    Scaffold(
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF2E7D32), Color(0xFF81C784)) // same gradient as previous screens
+                        )
+                    )
+            ) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            "Citizen",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { }) {
+                            Icon(
+                                Icons.Default.Language,
+                                contentDescription = "Language",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { }) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = "Settings",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent // important, so gradient shows
+                    )
+                )
+            }
+        }
+        ,
+        bottomBar = {
+            BottomNavBar(navController)
+        },
+        containerColor = colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Welcome header
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Welcome HackSmiths!",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.onBackground
+                )
+                Text(
+                    text = "Report issues in your community",
+                    fontSize = 16.sp,
+                    color = colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
+
+            // Map + Search
+            item { MapSearchSection() }
+
+            // Report button
+            item {
+                Button(
+                    onClick = { navController.navigate(Screen.ReportIssue.route) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2E7D32),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Report", modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Report an Issue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            // Recent reports header
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Recent Reports",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onBackground
+                    )
+                    Icon(
+                        imageVector = Icons.Outlined.BookmarkBorder,
+                        contentDescription = "View All Reports",
+                        tint = colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+            }
+
+            // Report cards
+            items(recentReports) { report ->
+                ReportCard(report)
+            }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+    }
+}
+
+@Composable
+fun MapSearchSection() {
+    var searchQuery by remember { mutableStateOf("") }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(6.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.mapup),
+                contentDescription = "Map",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search location") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
+                shape = CircleShape,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White.copy(alpha = 0.95f),
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color(0xFF2E7D32),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun ReportCard(report: HomeReport) {
+    val colorScheme = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(report.iconBgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = report.icon,
+                    contentDescription = report.title,
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(report.title, fontWeight = FontWeight.Bold, color = colorScheme.onBackground, fontSize = 16.sp)
+                Text(report.status, color = colorScheme.onBackground.copy(alpha = 0.7f), fontSize = 14.sp)
+            }
+        }
+    }
+}
+
+// Reusable bottom nav
+@Composable
+fun BottomNavBar(navController: NavController) {
+    val items = listOf(
+        Screen.Home.route to Icons.Default.Home,
+        Screen.MyReports.route to Icons.Default.List,
+        Screen.Notifications.route to Icons.Default.Notifications,
+        Screen.Profile.route to Icons.Default.Person
+    )
+    var selectedItem by remember { mutableStateOf(0) }
+
+    NavigationBar(
+        containerColor = Brush.horizontalGradient(
+            listOf(Color(0xFF2E7D32), Color(0xFF81C784))
+        ).toColor(),
+        tonalElevation = 8.dp
+    ) {
+        items.forEachIndexed { index, (route, icon) ->
+            NavigationBarItem(
+                selected = selectedItem == index,
+                onClick = {
+                    selectedItem = index
+                    navController.navigate(route)
+                },
+                icon = {
+                    Icon(
+                        icon,
+                        contentDescription = route,
+                        tint = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
+                    )
+                },
+                label = {
+                    Text(
+                        route.substringAfterLast('.'),
+                        color = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
+                    )
+                }
+            )
+        }
+    }
+}
+
+// Extension function for gradient
+fun Brush.toColor(): Color = Color(0xFF2E7D32)
