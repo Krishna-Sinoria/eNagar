@@ -1,4 +1,4 @@
-package com.example.enagar.screens
+package com.example.enagar.presentation.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
 import com.example.enagar.R
 
 @Composable

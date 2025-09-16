@@ -50,8 +50,7 @@
 //}
 
 
-
-package com.example.enagar.screens
+package com.example.enagar.presentation.ui.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -68,18 +67,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
 
-data class CategoryItem(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
+data class CategoryItem(val icon: ImageVector, val label: String)
 
 @SuppressLint("MissingPermission") // we’ll request permissions safely
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +93,7 @@ fun ReportIssuesScreen(navController: NavController) {
     var selectedCategory by remember { mutableStateOf("Tree") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     // Ask location permission
@@ -262,7 +264,7 @@ fun ReportIssuesScreen(navController: NavController) {
                     categories.forEach { item ->
                         DropdownMenuItem(
                             text = {
-                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         item.icon,
                                         contentDescription = item.label,

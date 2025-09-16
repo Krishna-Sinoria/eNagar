@@ -24,7 +24,7 @@
 //    }
 //}
 
-package com.example.enagar.screens
+package com.example.enagar.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

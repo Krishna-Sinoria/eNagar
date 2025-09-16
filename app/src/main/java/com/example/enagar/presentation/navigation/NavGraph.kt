@@ -1,4 +1,4 @@
-package com.example.enagar.navigation
+package com.example.enagar.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -8,8 +8,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.enagar.components.BottomNavBar
-import com.example.enagar.screens.*
+import com.example.enagar.presentation.ui.components.BottomNavBar
+import com.example.enagar.presentation.ui.screens.HomeScreen
+import com.example.enagar.presentation.ui.screens.MyReportsScreen
+import com.example.enagar.presentation.ui.screens.NotificationScreen
+import com.example.enagar.presentation.ui.screens.ProfileScreen
+import com.example.enagar.presentation.ui.screens.ReportIssuesScreen
+import com.example.enagar.presentation.ui.screens.ReportSubmittedScreen
+import com.example.enagar.presentation.ui.screens.SignInScreen
+import com.example.enagar.presentation.ui.screens.SignUpScreen
 
 sealed class Screen(val route: String) {
     object SignIn : Screen("signin")

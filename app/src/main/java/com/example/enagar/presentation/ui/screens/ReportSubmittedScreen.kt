@@ -1,4 +1,4 @@
-package com.example.enagar.screens
+package com.example.enagar.presentation.ui.screens
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -28,9 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.animation.OvershootInterpolator
 import androidx.navigation.NavController
 import com.example.enagar.R
-import com.example.enagar.navigation.Screen
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import com.example.enagar.presentation.navigation.Screen
+import kotlinx.coroutines.delay
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +60,7 @@ fun ReportSubmittedScreen(navController: NavController) {
         for (i in 0..steps) {
             illustrationAlpha = i / steps.toFloat()
             illustrationOffsetY = 50 * (1 - i / steps.toFloat())
-            kotlinx.coroutines.delay((duration / steps).toLong())
+            delay((duration / steps).toLong())
         }
     }
 
