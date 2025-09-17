@@ -1,4 +1,4 @@
-package com.example.enagar.models
+package com.example.enagar.domain.models
 
 
 

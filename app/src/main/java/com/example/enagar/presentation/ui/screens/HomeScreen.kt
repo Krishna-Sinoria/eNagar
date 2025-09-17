@@ -52,7 +52,7 @@
 //    }
 //}
 
-package com.example.enagar.screens
+package com.example.enagar.presentation.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -78,7 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.enagar.R
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
 
 // Data class for reports
 data class HomeReport(

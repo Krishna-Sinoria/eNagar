@@ -1,8 +1,8 @@
-package com.example.enagar.components
+package com.example.enagar.presentation.ui.components
 
 
-import com.example.enagar.models.NotificationItem
-import com.example.enagar.models.Report
+import com.example.enagar.domain.models.NotificationItem
+import com.example.enagar.domain.models.Report
 
 object DummyData {
     val reports = listOf(
