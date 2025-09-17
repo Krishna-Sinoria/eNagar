@@ -1,36 +1,12 @@
-//package com.example.enagar.screens
-//
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.Composable
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.unit.dp
-//import androidx.navigation.NavController
-//
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun ProfileScreen(navController: NavController, padding1: Modifier) {
-//    Scaffold(
-//        topBar = { TopAppBar(title = { Text("Profile") }) }
-//    ) { padding ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(padding)
-//                .padding(16.dp)
-//        ) {
-//            Text("User Profile Screen")
-//        }
-//    }
-//}
-
 package com.example.enagar.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,15 +40,25 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
         role = "Citizen"
     )
 
+    val isDark = isSystemInDarkTheme()
+    val backgroundColor = if (isDark) Color(0xFF121212) else Color(0xFFF6F7F9)
+    val cardBgColor = if (isDark) Color(0xFF1F1F1F) else Color.White
+    val surfaceVariant = if (isDark) Color(0xFF242424) else Color(0xFFF0F2F5)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
+                        "Profile",
+                        color = colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
                     )
                 },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
+        containerColor = colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -118,6 +104,7 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBgColor),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -136,9 +123,16 @@ fun ProfileScreen(navController: NavController, padding1: Modifier = Modifier) {
             // Logout Button
             Button(
                 onClick = { /* TODO: Add logout logic */ },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D4C41)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth(0.7f)
             ) {
+                Text(
+                    "Logout",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

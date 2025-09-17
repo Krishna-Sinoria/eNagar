@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Report
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,8 +37,11 @@ fun BottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination: NavDestination? = navBackStackEntry?.destination
 
+    val colorScheme = MaterialTheme.colorScheme
 
     NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = colorScheme.primary,
         tonalElevation = 8.dp
     ) {
         items.forEach { item ->
@@ -57,11 +61,13 @@ fun BottomNavBar(navController: NavHostController) {
                     Icon(
                         item.icon,
                         contentDescription = item.label,
+                        tint = if (isSelected) colorScheme.secondary else colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 },
                 label = {
                     Text(
                         item.label,
+                        color = if (isSelected) colorScheme.secondary else colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
             )

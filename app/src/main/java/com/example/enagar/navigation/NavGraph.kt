@@ -20,6 +20,8 @@ sealed class Screen(val route: String) {
     object MyReports : Screen("my_reports")
     object Notifications : Screen("notifications")
     object Profile : Screen("profile")
+
+    object FieldWorkerDashboard : Screen("field_worker_dashboard")
 }
 
 @Composable
@@ -65,6 +67,12 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             ) { paddingValues ->
                 ProfileScreen(navController, Modifier.padding(paddingValues))
             }
+
+        }
+
+
+        composable(Screen.FieldWorkerDashboard.route) {
+            FieldWorkerDashboardScreen(navController)
         }
     }
 }

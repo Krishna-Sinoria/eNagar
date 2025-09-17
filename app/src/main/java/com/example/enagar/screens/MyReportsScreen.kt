@@ -2,6 +2,7 @@ package com.example.enagar.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,13 +55,22 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
         }
     }
 
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "My Reports",
+                        color = colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
                     )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
+        containerColor = colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -68,10 +78,15 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
                 .padding(padding)
                 .padding(16.dp)
         ) {
+            // Scrollable tabs to show full text
+            ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
+                containerColor = colorScheme.surface,
+                edgePadding = 16.dp,
                 indicator = { tabPositions ->
                     TabRowDefaults.Indicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        color = colorScheme.primary,
                         height = 3.dp
                     )
                 }
@@ -84,6 +99,9 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
                             Text(
                                 text = t,
                                 fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (selectedTabIndex == index)
+                                    colorScheme.primary else colorScheme.onSurface.copy(alpha = 0.7f)
                             )
                         }
                     )
@@ -99,6 +117,7 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
                 ) {
                     Text(
                         text = "No reports in this category.",
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -111,6 +130,7 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
                     items(filteredReports) { report ->
                         MyReportCard(
                             report = report,
+                            cardBg = colorScheme.surface,
                             onClick = {
                                 navController.navigate("report_detail/${report.id}")
                             }
@@ -138,6 +158,8 @@ fun MyReportCard(report: MyReport, cardBg: Color, onClick: () -> Unit) {
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg)
     ) {
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
