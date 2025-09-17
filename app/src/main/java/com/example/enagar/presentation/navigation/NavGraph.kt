@@ -8,15 +8,21 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.enagar.presentation.ui.components.BottomNavBar
+
+import com.example.enagar.presentation.ui.screens.BottomNavBar
 import com.example.enagar.presentation.ui.screens.HomeScreen
-import com.example.enagar.presentation.ui.screens.MyReportsScreen
-import com.example.enagar.presentation.ui.screens.NotificationScreen
-import com.example.enagar.presentation.ui.screens.ProfileScreen
+
 import com.example.enagar.presentation.ui.screens.ReportIssuesScreen
-import com.example.enagar.presentation.ui.screens.ReportSubmittedScreen
-import com.example.enagar.presentation.ui.screens.SignInScreen
-import com.example.enagar.presentation.ui.screens.SignUpScreen
+
+import com.example.enagar.screens.FieldWorkerDashboardScreen
+import com.example.enagar.screens.MyReportsScreen
+import com.example.enagar.screens.NotificationScreen
+import com.example.enagar.screens.ProfileScreen
+import com.example.enagar.screens.ReportSubmittedScreen
+import com.example.enagar.screens.SignInScreen
+import com.example.enagar.screens.SignUpScreen
+
+
 
 sealed class Screen(val route: String) {
     object SignIn : Screen("signin")

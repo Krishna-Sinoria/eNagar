@@ -29,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -253,17 +254,19 @@ fun ReportIssuesScreen(navController: NavController) {
 
 
     Scaffold(
-        snackbarHost = {SnackbarHost(snackbarHostState)},
         topBar = {
-            TopAppBar(
-                title = { Text("Report an Issue") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Report Issue",
+                        color = colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
-        }
+        },
+        containerColor = colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -275,7 +278,7 @@ fun ReportIssuesScreen(navController: NavController) {
             Text(
                 text = "Upload a photo, select type and provide details.",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = colorScheme.primary,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -289,10 +292,10 @@ fun ReportIssuesScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxSize()
                         .aspectRatio(1f)
-                        .background(Color(0xFFF5F5F5))
+                        .background(colorScheme.primary)
                     ,
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.Transparent
+                        containerColor = colorScheme.background
 
                     ),
                     shape = RoundedCornerShape(12.dp)
@@ -319,7 +322,7 @@ fun ReportIssuesScreen(navController: NavController) {
                         ) {
                             Text(
                                 text = "No Photo Selected",
-                                color = Color.Gray,
+                                color = colorScheme.primary,
                                 fontSize = 16.sp
                             )
                         }
@@ -364,12 +367,12 @@ fun ReportIssuesScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = "Capture Photo",
-                            tint = Color.Gray,
+                            tint = Color.White,
                             modifier = Modifier.size(32.dp)
                         )
                         Text(
                             text = "Capture Photo",
-                            color = Color.Gray,
+                            color = Color.White,
                             fontSize = 16.sp
                         )
                     }
@@ -400,12 +403,12 @@ fun ReportIssuesScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = "Upload Photo",
-                            tint = Color.Gray,
+                            tint = Color.White,
                             modifier = Modifier.size(32.dp)
                         )
                         Text(
                             text = "Upload Photo",
-                            color = Color.Gray,
+                            color = Color.White,
                             fontSize = 16.sp
                         )
                     }
@@ -428,8 +431,7 @@ fun ReportIssuesScreen(navController: NavController) {
                 .padding(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFffffff
-                    )
+                    containerColor = colorScheme.background
                 ),
                 elevation = CardDefaults.elevatedCardElevation(5.dp),
                 border = CardDefaults.outlinedCardBorder(true)) {
@@ -453,7 +455,7 @@ fun ReportIssuesScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
-                            .background(Color(0xFF4CAF50),)
+                            .background(colorScheme.background,)
                             .padding(0.dp)
                     ) {
                         Column(modifier = Modifier.fillMaxSize(),
@@ -474,7 +476,7 @@ fun ReportIssuesScreen(navController: NavController) {
                                         .fillMaxWidth()
                                         .padding(8.dp),
                                     fontSize = 14.sp,
-                                    color = Color.White,
+                                    color = colorScheme.primary,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -494,7 +496,9 @@ fun ReportIssuesScreen(navController: NavController) {
                 text = "Problem Type",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp).
+                align(Alignment.CenterHorizontally),
+                color = colorScheme.primary
             )
 
 
@@ -560,10 +564,11 @@ fun ReportIssuesScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50)
-                ),
-                shape = RoundedCornerShape(28.dp)
+                    containerColor = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary
+                )
             ) {
                 Text(
                     text = "Submit Report",
@@ -586,7 +591,7 @@ fun IssueTypeItem(issue: IssueType) {
         Card(
             modifier = Modifier.size(60.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF73F0AB)
+                containerColor = colorScheme.background
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -597,7 +602,7 @@ fun IssueTypeItem(issue: IssueType) {
                 Icon(
                     imageVector = issue.icon,
                     contentDescription = issue.name,
-                    tint = Color.Gray,
+                    tint = colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }

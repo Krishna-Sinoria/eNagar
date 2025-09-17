@@ -18,7 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.enagar.R
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
+
 
 @Composable
 fun SignInScreen(navController: NavHostController) {

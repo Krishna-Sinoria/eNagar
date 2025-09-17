@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.animation.OvershootInterpolator
 import androidx.navigation.NavController
 import com.example.enagar.R
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID

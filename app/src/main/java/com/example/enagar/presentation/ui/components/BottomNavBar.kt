@@ -17,7 +17,8 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.enagar.navigation.Screen
+import com.example.enagar.presentation.navigation.Screen
+
 
 data class BottomNavItem(
     val route: String,
@@ -28,7 +29,8 @@ data class BottomNavItem(
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavItem(Screen.Home.route, Icons.Default.Home, "Home"),
+        BottomNavItem(
+            Screen.Home.route, Icons.Default.Home, "Home"),
         BottomNavItem(Screen.MyReports.route, Icons.Default.Report, "Reports"),
         BottomNavItem(Screen.Notifications.route, Icons.Default.Notifications, "Notifications"),
         BottomNavItem(Screen.Profile.route, Icons.Default.Person, "Profile")
