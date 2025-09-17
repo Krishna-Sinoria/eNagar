@@ -1,173 +1,207 @@
-package com.example.enagar.presentation.ui.screens
+package com.example.enagar.screens
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.enagar.presentation.navigation.Screen
 import com.example.enagar.R
+import com.example.enagar.navigation.Screen
 
 @Composable
 fun SignUpScreen(navController: NavHostController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var cardVisible by remember { mutableStateOf(false) }
 
-    // Animated waving emoji rotation
-    val infiniteTransition = rememberInfiniteTransition(label = "wave")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = -15f,
-        targetValue = 15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "wave"
-    )
+    var role by remember { mutableStateOf("Citizen") }
+    var departmentName by remember { mutableStateOf("") }
+    var departmentId by remember { mutableStateOf("") }
 
-    // Trigger card animation when screen appears
-    LaunchedEffect(Unit) {
-        cardVisible = true
-    }
+    val colorScheme = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF4CAF50), Color(0xFF81C784))
+                colorScheme.background
                 )
-            )
+
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()), // ✅ Fix: scrollable
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo or illustration
+            // Logo
             Image(
-                painter = painterResource(id = R.drawable.enagarlogo),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(180.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Create your ",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "eNagar",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Yellow
-                )
-                Text(
-                    text = " 👋",
-                    fontSize = 28.sp,
-                    modifier = Modifier.graphicsLayer { rotationZ = rotation }
-                )
-            }
+            Text(
+                text = "Create your eNagar Account",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.primary
+            )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Animated Card
-            AnimatedVisibility(
-                visible = cardVisible,
-                enter = slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(600)),
-                exit = fadeOut()
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = colorScheme.surface,
+                    contentColor = colorScheme.onSurface
+                )
             ) {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    // Full Name
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Full Name") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colorScheme.primary) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Email
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colorScheme.primary) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Password
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorScheme.primary) },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Role selection (Citizen or Field Worker)
+                    Text("Select Role", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            label = { Text("Full Name") },
-                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = { Text("Email") },
-                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Password") },
-                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Button(
-                            onClick = { navController.navigate(Screen.Home.route) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF2E7D32)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = role == "Citizen",
+                                onClick = { role = "Citizen" }
                             )
-                        ) {
-                            Text("Sign Up", fontSize = 18.sp, color = Color.White)
+                            Text("Citizen")
                         }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = role == "FieldWorker",
+                                onClick = { role = "FieldWorker" }
+                            )
+                            Text("Field Worker")
+                        }
+                    }
+
+                    // Extra fields if Field Worker
+                    if (role == "FieldWorker") {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = departmentName,
+                            onValueChange = { departmentName = it },
+                            label = { Text("Department Name") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        TextButton(onClick = { navController.popBackStack() }) {
-                            Text("Already have an account? Login", color = Color(0xFF2E7D32))
-                        }
+                        OutlinedTextField(
+                            value = departmentId,
+                            onValueChange = { departmentId = it },
+                            label = { Text("Department ID Number") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Sign Up button
+                    Button(
+                        onClick = {
+                            if (role == "FieldWorker" && departmentName.isNotBlank() && departmentId.isNotBlank()) {
+                                navController.navigate(Screen.FieldWorkerDashboard.route)
+                            } else if (role == "Citizen") {
+                                navController.navigate(Screen.Home.route)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("Sign Up", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Navigation to SignIn (✅ Won't hide now)
+                    TextButton(onClick = { navController.popBackStack() }) {
+                        Text("Already have an account? Login", color = colorScheme.primary)
                     }
                 }
             }

@@ -1,30 +1,4 @@
-//package com.example.enagar.screens
-//
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.Composable
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.unit.dp
-//import androidx.navigation.NavController
-//
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun NotificationScreen(navController: NavController, padding1: Modifier) {
-//    Scaffold(
-//        topBar = { TopAppBar(title = { Text("Notifications") }) }
-//    ) { padding ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(padding)
-//                .padding(16.dp)
-//        ) {
-//            Text("No notifications yet.")
-//        }
-//    }
-//}
-
-package com.example.enagar.presentation.ui.screens
+package com.example.enagar.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -45,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-// Dummy notification model
+// Notification model
 data class NotificationItem(
     val id: Int,
     val title: String,
@@ -97,26 +71,22 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
         )
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Notifications",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        "Notifications",
+                        color = colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
-                modifier = Modifier.background(
-                    Brush.horizontalGradient(
-                        listOf(Color(0xFF2E7D32), Color(0xFF81C784))
-                    )
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -135,10 +105,22 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
 
 @Composable
 fun NotificationCard(notification: NotificationItem) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    val circleColor = when (notification.type) {
+        "Resolved" -> Color(0xFF2E7D32)
+        "Comment" -> Color(0xFF1976D2)
+        "Update" -> Color(0xFFD28F18)
+        "Assigned" -> Color(0xFF6A1B9A)
+        "Received" -> Color(0xFF455A64)
+        else -> colorScheme.primary
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -146,16 +128,6 @@ fun NotificationCard(notification: NotificationItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Circle icon placeholder (colored by type)
-            val circleColor = when (notification.type) {
-                "Resolved" -> Color(0xFF2E7D32) // green
-                "Comment" -> Color(0xFF1976D2)  // blue
-                "Update" -> Color(0xFFD28F18)   // orange
-                "Assigned" -> Color(0xFF6A1B9A) // purple
-                "Received" -> Color(0xFF455A64) // grey
-                else -> MaterialTheme.colorScheme.primary
-            }
-
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -171,19 +143,18 @@ fun NotificationCard(notification: NotificationItem) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Title + message + time
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = notification.title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = notification.message,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -191,10 +162,9 @@ fun NotificationCard(notification: NotificationItem) {
                 Text(
                     text = notification.time,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 }
-

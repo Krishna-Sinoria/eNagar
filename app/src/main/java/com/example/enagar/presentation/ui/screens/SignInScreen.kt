@@ -1,6 +1,5 @@
-package com.example.enagar.presentation.ui.screens
+package com.example.enagar.screens
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,88 +11,63 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.enagar.presentation.navigation.Screen
 import com.example.enagar.R
+import com.example.enagar.navigation.Screen
 
 @Composable
 fun SignInScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var selectedRole by remember { mutableStateOf("User") } // User or Field Worker
 
-    // Animated waving emoji rotation
-    val infiniteTransition = rememberInfiniteTransition(label = "wave")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = -15f,
-        targetValue = 15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "wave"
-    )
+    val colorScheme = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF4CAF50), Color(0xFF81C784)) // Green gradient
-                )
-            )
+            .background(colorScheme.background)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
 
-            // Logo or illustration (replace R.drawable.ic_launcher_foreground with your own logo)
+            // Logo
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(180.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Welcome to ",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "eNagar",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Yellow
-                )
-                Text(
-                    text = " 👋",
-                    fontSize = 28.sp,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = rotation
-                    }
-                )
-            }
+            Text(
+                text = "Welcome to eNagar",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onBackground
+            )
 
             Spacer(modifier = Modifier.height(28.dp))
 
             // Card for form
             Card(
                 shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                modifier = Modifier.fillMaxWidth()
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = colorScheme.surface,
+                    contentColor = colorScheme.onSurface
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -101,6 +75,7 @@ fun SignInScreen(navController: NavHostController) {
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Email field
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -108,11 +83,16 @@ fun SignInScreen(navController: NavHostController) {
                         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colorScheme.primary,
+                            cursorColor = colorScheme.primary
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Password field
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -121,26 +101,77 @@ fun SignInScreen(navController: NavHostController) {
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colorScheme.primary,
+                            cursorColor = colorScheme.primary
+                        )
                     )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Role selection (User / Field Worker)
+                    Text(
+                        text = "Login as",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FilterChip(
+                            selected = selectedRole == "User",
+                            onClick = { selectedRole = "User" },
+                            label = { Text("User") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = colorScheme.primary,
+                                selectedLabelColor = colorScheme.onPrimary
+                            )
+                        )
+                        FilterChip(
+                            selected = selectedRole == "Field Worker",
+                            onClick = { selectedRole = "Field Worker" },
+                            label = { Text("Field Worker") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = colorScheme.primary,
+                                selectedLabelColor = colorScheme.onPrimary
+                            )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Login button
                     Button(
-                        onClick = { navController.navigate(Screen.Home.route) },
+                        onClick = {
+                            if (selectedRole == "User") {
+                                navController.navigate(Screen.Home.route)
+                            } else {
+                                navController.navigate(Screen.FieldWorkerDashboard.route)
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2E7D32)
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary
                         )
                     ) {
-                        Text("Login", fontSize = 18.sp, color = Color.White)
+                        Text("Login", fontSize = 18.sp)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // Sign up option
                     TextButton(onClick = { navController.navigate(Screen.SignUp.route) }) {
-                        Text("Don’t have an account? Sign Up", color = Color(0xFF2E7D32))
+                        Text(
+                            "Don’t have an account? Sign Up",
+                            color = colorScheme.primary
+                        )
                     }
                 }
             }

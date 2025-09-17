@@ -69,7 +69,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -98,55 +97,44 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
 
     // Dummy data
     val recentReports = listOf(
-        HomeReport(1, "Pothole on Main Street", "Reported", Icons.Default.ReportProblem, Color(0xFFEF5350)),
-        HomeReport(2, "Streetlight Outage", "In Progress", Icons.Default.Lightbulb, Color(0xFFFFA726)),
-        HomeReport(3, "Broken Park Bench", "Resolved", Icons.Default.Done, Color(0xFF66BB6A))
+        HomeReport(1, "Pothole on Main Street", "Reported", Icons.Default.ReportProblem, colorScheme.error),
+        HomeReport(2, "Streetlight Outage", "In Progress", Icons.Default.Lightbulb, colorScheme.secondary),
+        HomeReport(3, "Broken Park Bench", "Resolved", Icons.Default.Done, colorScheme.primary)
     )
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFF2E7D32), Color(0xFF81C784)) // same gradient as previous screens
-                        )
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Citizen",
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onPrimary
                     )
-            ) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            "Citizen",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                },
+                navigationIcon = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Default.Language,
+                            contentDescription = "Language",
+                            tint = colorScheme.onPrimary
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                Icons.Default.Language,
-                                contentDescription = "Language",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent // important, so gradient shows
-                    )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = colorScheme.onPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = colorScheme.primary
                 )
-            }
-        }
-        ,
+            )
+        },
         bottomBar = {
             BottomNavBar(navController)
         },
@@ -185,10 +173,10 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    shape = RoundedCornerShape(30.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2E7D32),
-                        contentColor = Color.White
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
                     )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Report", modifier = Modifier.size(22.dp))
@@ -231,12 +219,15 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
 @Composable
 fun MapSearchSection() {
     var searchQuery by remember { mutableStateOf("") }
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -257,11 +248,11 @@ fun MapSearchSection() {
                     .align(Alignment.TopCenter),
                 shape = CircleShape,
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White.copy(alpha = 0.95f),
-                    unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    cursorColor = Color(0xFF2E7D32),
+                    focusedContainerColor = colorScheme.surface.copy(alpha = 0.95f),
+                    unfocusedContainerColor = colorScheme.surface.copy(alpha = 0.95f),
+                    focusedTextColor = colorScheme.onSurface,
+                    unfocusedTextColor = colorScheme.onSurface,
+                    cursorColor = colorScheme.primary,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -309,6 +300,7 @@ fun ReportCard(report: HomeReport) {
 // Reusable bottom nav
 @Composable
 fun BottomNavBar(navController: NavController) {
+    val colorScheme = MaterialTheme.colorScheme
     val items = listOf(
         Screen.Home.route to Icons.Default.Home,
         Screen.MyReports.route to Icons.Default.List,
@@ -318,9 +310,7 @@ fun BottomNavBar(navController: NavController) {
     var selectedItem by remember { mutableStateOf(0) }
 
     NavigationBar(
-        containerColor = Brush.horizontalGradient(
-            listOf(Color(0xFF2E7D32), Color(0xFF81C784))
-        ).toColor(),
+        containerColor = colorScheme.primary,
         tonalElevation = 8.dp
     ) {
         items.forEachIndexed { index, (route, icon) ->
@@ -334,19 +324,16 @@ fun BottomNavBar(navController: NavController) {
                     Icon(
                         icon,
                         contentDescription = route,
-                        tint = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
+                        tint = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 },
                 label = {
                     Text(
                         route.substringAfterLast('.'),
-                        color = if (selectedItem == index) Color(0xFF81C784) else Color.White.copy(0.8f)
+                        color = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 }
             )
         }
     }
 }
-
-// Extension function for gradient
-fun Brush.toColor(): Color = Color(0xFF2E7D32)
