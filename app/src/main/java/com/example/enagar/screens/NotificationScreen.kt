@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+// Notification model
 data class NotificationItem(
     val id: Int,
     val title: String,
@@ -70,15 +71,22 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
         )
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
+                        "Notifications",
+                        color = colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
                     )
                 },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
+        containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -97,9 +105,22 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
 
 @Composable
 fun NotificationCard(notification: NotificationItem) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    val circleColor = when (notification.type) {
+        "Resolved" -> Color(0xFF2E7D32)
+        "Comment" -> Color(0xFF1976D2)
+        "Update" -> Color(0xFFD28F18)
+        "Assigned" -> Color(0xFF6A1B9A)
+        "Received" -> Color(0xFF455A64)
+        else -> colorScheme.primary
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -127,11 +148,13 @@ fun NotificationCard(notification: NotificationItem) {
                     text = notification.title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
+                    color = colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = notification.message,
                     fontSize = 13.sp,
+                    color = colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -139,6 +162,7 @@ fun NotificationCard(notification: NotificationItem) {
                 Text(
                     text = notification.time,
                     fontSize = 12.sp,
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }

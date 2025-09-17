@@ -97,6 +97,9 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
 
     // Dummy data
     val recentReports = listOf(
+        HomeReport(1, "Pothole on Main Street", "Reported", Icons.Default.ReportProblem, colorScheme.error),
+        HomeReport(2, "Streetlight Outage", "In Progress", Icons.Default.Lightbulb, colorScheme.secondary),
+        HomeReport(3, "Broken Park Bench", "Resolved", Icons.Default.Done, colorScheme.primary)
     )
 
     Scaffold(
@@ -106,6 +109,7 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                     Text(
                         "Citizen",
                         fontWeight = FontWeight.Bold,
+                        color = colorScheme.onPrimary
                     )
                 },
                 navigationIcon = {
@@ -113,6 +117,7 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                         Icon(
                             Icons.Default.Language,
                             contentDescription = "Language",
+                            tint = colorScheme.onPrimary
                         )
                     }
                 },
@@ -121,12 +126,15 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                         Icon(
                             Icons.Default.Settings,
                             contentDescription = "Settings",
+                            tint = colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = colorScheme.primary
                 )
             )
+        },
         bottomBar = {
             BottomNavBar(navController)
         },
@@ -165,7 +173,10 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
                     )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Report", modifier = Modifier.size(22.dp))
@@ -208,11 +219,15 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
 @Composable
 fun MapSearchSection() {
     var searchQuery by remember { mutableStateOf("") }
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp),
         shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -233,6 +248,11 @@ fun MapSearchSection() {
                     .align(Alignment.TopCenter),
                 shape = CircleShape,
                 colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.surface.copy(alpha = 0.95f),
+                    unfocusedContainerColor = colorScheme.surface.copy(alpha = 0.95f),
+                    focusedTextColor = colorScheme.onSurface,
+                    unfocusedTextColor = colorScheme.onSurface,
+                    cursorColor = colorScheme.primary,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -280,6 +300,7 @@ fun ReportCard(report: HomeReport) {
 // Reusable bottom nav
 @Composable
 fun BottomNavBar(navController: NavController) {
+    val colorScheme = MaterialTheme.colorScheme
     val items = listOf(
         Screen.Home.route to Icons.Default.Home,
         Screen.MyReports.route to Icons.Default.List,
@@ -289,6 +310,7 @@ fun BottomNavBar(navController: NavController) {
     var selectedItem by remember { mutableStateOf(0) }
 
     NavigationBar(
+        containerColor = colorScheme.primary,
         tonalElevation = 8.dp
     ) {
         items.forEachIndexed { index, (route, icon) ->
@@ -302,15 +324,16 @@ fun BottomNavBar(navController: NavController) {
                     Icon(
                         icon,
                         contentDescription = route,
+                        tint = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 },
                 label = {
                     Text(
                         route.substringAfterLast('.'),
+                        color = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 }
             )
         }
     }
 }
-
