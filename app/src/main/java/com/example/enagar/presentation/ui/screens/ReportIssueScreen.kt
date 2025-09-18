@@ -1,15 +1,10 @@
 
 package com.example.enagar.presentation.ui.screens
 
-import android.content.ContentValues
-import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Location
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,18 +14,55 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Traffic
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Water
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,35 +70,34 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.enagar.domain.models.IssueType
+import com.example.enagar.presentation.navigation.Screen
+import com.example.enagar.presentation.ui.components.ReportIssueDescription
+import com.example.enagar.presentation.ui.components.ReportIssueTopBar
+import com.example.enagar.presentation.ui.utility_functions.IssueTypeItem
+import com.example.enagar.presentation.ui.utility_functions.createImageUri
+import com.example.enagar.presentation.ui.utility_functions.fetchLocation
+import com.example.enagar.presentation.viewModel.CitizenViewModel
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.SettingsClient
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.launch
-import java.util.jar.Manifest
-import kotlin.contracts.contract
 
-@Preview
-@Composable
-private fun prehsfs() {
-    val navController = rememberNavController()
-    ReportIssuesScreen(navController)
-
-}
-// 2. Report Issue Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportIssuesScreen(navController: NavController) {
+    val vm : CitizenViewModel = hiltViewModel()
+    val report = vm.issueReport.value
+
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -74,15 +105,12 @@ fun ReportIssuesScreen(navController: NavController) {
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var tempUri by remember { mutableStateOf<Uri?>(null) }
-    var permissionGranted by remember { mutableStateOf(false) }
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var cameraPermissionGranted by remember { mutableStateOf(false) }
     var permissionDenied by remember { mutableStateOf(false) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var location by remember { mutableStateOf("") }
     var isLocatonAvailable by remember { mutableStateOf(false) }
-    var isLocationSettingEnabled by remember { mutableStateOf(false) }
-
 
     val locationSettingsLauncher = rememberLauncherForActivityResult(
         contract= ActivityResultContracts.StartIntentSenderForResult()
@@ -90,7 +118,6 @@ fun ReportIssuesScreen(navController: NavController) {
         result->
         Log.d("TAG", "ReportIssuesScreen: system location enable request")
         if (result.resultCode == android.app.Activity.RESULT_OK){
-            isLocationSettingEnabled = true
             // now try to fetch location
             fetchLocation(context,fusedLocationClient){
                 loc->
@@ -101,15 +128,7 @@ fun ReportIssuesScreen(navController: NavController) {
         }else{
             Log.d("TAG", "Location settings not enabled by user")
             Toast.makeText(context, "Location is required for this feature", Toast.LENGTH_LONG).show() }
-
-
     }
-    // Debug logs
-    fun logDebug(message: String) {
-        Log.d("ReportIssuesScreen", message)
-        println("ReportIssuesScreen: $message") // Console log for easier debugging
-    }
-
     // camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -120,15 +139,6 @@ fun ReportIssuesScreen(navController: NavController) {
         else{
             Toast.makeText(context,"Image capture failed", Toast.LENGTH_LONG).show()
         }
-    }
-
-    // Gallery Launcher
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) {
-            uri : Uri? ->
-        selectedImageUri = uri
-
     }
     // location permission launcher
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -174,7 +184,6 @@ fun ReportIssuesScreen(navController: NavController) {
         settingsClient.checkLocationSettings(locationSettingsRequest)
             .addOnSuccessListener{
                 Log.d("TAG", "checkAndRequestLocalionSettings: Location Setting already enabled")
-                isLocationSettingEnabled = true
                 fetchLocation(context,fusedLocationClient){loc->
                     location = loc
                     isLocatonAvailable = loc.isNotBlank() && loc != "Location not available"
@@ -254,18 +263,8 @@ fun ReportIssuesScreen(navController: NavController) {
 
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Report Issue",
-                        color = colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
-            )
-        },
+        snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
+        topBar = {ReportIssueTopBar(navController) },
         containerColor = colorScheme.background
     ) { paddingValues ->
         Column(
@@ -292,18 +291,20 @@ fun ReportIssuesScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxSize()
                         .aspectRatio(1f)
-                        .background(colorScheme.primary)
+                        .background(color =  if (selectedImageUri != null) Color.Transparent else Color(0xFFD1CDCD))
                     ,
                     colors = CardDefaults.cardColors(
-                        containerColor = colorScheme.background
+                        containerColor = if (selectedImageUri != null) Color.Transparent else Color(0xFFD1CDCD)
 
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     // show  image if available
                     if (selectedImageUri != null) {
+
                         // display captured image
                         selectedImageUri?.let { uri->
+                            vm.setImageUri(uri)
                             Image(
                                 painter = rememberAsyncImagePainter(uri),
                                 contentDescription = "Captured Image",
@@ -379,40 +380,7 @@ fun ReportIssuesScreen(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
 
-                //  Gallery Button
-                Button(
-                    onClick = {
-                        if (!isLocatonAvailable){
-                            chedkAndRequestLocationPermission()
-                            return@Button
-                        }
-                        galleryLauncher.launch("image/*")
 
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(),
-//                    enabled = isLocatonAvailable
-
-                ) {
-                    Row (modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 3.dp, end = 3.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically){
-                        Icon(
-                            imageVector = Icons.Default.CameraAlt,
-                            contentDescription = "Upload Photo",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            text = "Upload Photo",
-                            color = Color.White,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
                 if (permissionDenied){
                     LaunchedEffect(permissionDenied) {
                         snackbarHostState.showSnackbar("Location permission is required to auto-detect location.")
@@ -426,6 +394,8 @@ fun ReportIssuesScreen(navController: NavController) {
 
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Location Section
             Card(modifier = Modifier
                 .fillMaxWidth()
                 .padding(),
@@ -470,6 +440,7 @@ fun ReportIssuesScreen(navController: NavController) {
                                     .size(32.dp)
                             )
                             if (location.isNotBlank()){
+                                vm.setLocation(location)
                                 Text(
                                     text = "Location: $location",
                                     modifier = Modifier
@@ -496,8 +467,9 @@ fun ReportIssuesScreen(navController: NavController) {
                 text = "Problem Type",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp).
-                align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally),
                 color = colorScheme.primary
             )
 
@@ -514,7 +486,10 @@ fun ReportIssuesScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         rowItems.forEach { issue ->
-                            IssueTypeItem(issue)
+                            IssueTypeItem(issue){selectedIssue->
+                                vm.setIssueType(selectedIssue.name)
+
+                            }
                         }
                         // Fill remaining space if less than 3 items
                         repeat(3 - rowItems.size) {
@@ -525,23 +500,9 @@ fun ReportIssuesScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            ReportIssueDescription(vm)
 
             // Description Section
-            Text(
-                text = "Describe the Issue in Brief (Optional)",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                placeholder = { Text("Enter description...") }
-            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -549,10 +510,13 @@ fun ReportIssuesScreen(navController: NavController) {
             Button(
 
                 onClick = {
-                    if (selectedImageUri != null && location.isNotBlank()){
+                    Log.d("TAG", "ReportIssuesScreen: submit button ${report.location} && ${report.imageUri}")
+                    if (report.imageUri != null && report.location!!.isNotBlank()){
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar("Issue Reported Successfully")
-                            navController.navigate("report_submitted")
+                            navController.navigate(Screen.ReportSubmitted.route)
+                            vm.generateReportId()
+                            Log.d("TAG", "ReportIssuesScreen: ${vm.reportId}")
                         }
                     }
                     else{
@@ -577,154 +541,5 @@ fun ReportIssuesScreen(navController: NavController) {
                 )
             }
         }
-    }
-}
-
-@Composable
-fun IssueTypeItem(issue: IssueType) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(80.dp)
-            .clickable { }
-    ) {
-        Card(
-            modifier = Modifier.size(60.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = colorScheme.background
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = issue.icon,
-                    contentDescription = issue.name,
-                    tint = colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = issue.name,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-
-fun  createImageUri(context: Context) : Uri?{
-    val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
-        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/eNagar")
-    }
-    return try{
-        context.contentResolver.insert(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        )
-    }catch (e: Exception){
-        e.printStackTrace()
-        null
-    }
-
-}
-private fun fetchLocation(
-    context: Context,
-    fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
-    onLocation: (String) -> Unit
-) {
-    if (ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-        ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        Log.d("TAG", "fetchLocation: Permissions granted, trying to get location")
-
-        // First try to get last known location
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-           if (location !=null){
-               Log.d("TAG", "fetchLocation: Got last location: ${location.latitude}, ${location.longitude}")
-               onLocation("${location.latitude}, ${location.longitude}")
-           }
-            else{
-               Log.d("TAG", "fetchLocation: Last location is null, requesting current location")
-               // If last location is null, request current location
-               requestCurrentLocation(context, fusedLocationClient, onLocation)
-           }
-        }.addOnFailureListener {
-            Log.e("TAG", "fetchLocation: Failed to get last location", it)
-            requestCurrentLocation(context, fusedLocationClient, onLocation)
-        }
-    }
-    else{
-        onLocation("Location not available")
-    }
-}
-
-// Added: Function to actively request current location with timeout handling
-private fun requestCurrentLocation(
-    context: Context,
-    fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
-    onLocation: (String) -> Unit
-) {
-    if (ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        onLocation("Location not available")
-        return
-    }
-
-    Log.d("TAG", "requestCurrentLocation: Requesting current location")
-
-    try {
-        val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
-            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
-            10000L // 10 seconds
-        ).apply {
-            setMaxUpdates(1)
-            setWaitForAccurateLocation(false)
-        }.build()
-
-        val locationCallback = object : com.google.android.gms.location.LocationCallback() {
-            override fun onLocationResult(locationResult: com.google.android.gms.location.LocationResult) {
-                locationResult.lastLocation?.let { location ->
-                    Log.d("TAG", "requestCurrentLocation: Got current location: ${location.latitude}, ${location.longitude}")
-                    onLocation("${location.latitude}, ${location.longitude}")
-                    fusedLocationClient.removeLocationUpdates(this)
-                } ?: run {
-                    Log.d("TAG", "requestCurrentLocation: Current location result is null")
-                    onLocation("Location not available")
-                }
-            }
-        }
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-
-        // Timeout after 15 seconds with fallback location
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            fusedLocationClient.removeLocationUpdates(locationCallback)
-            Log.d("TAG", "requestCurrentLocation: Timeout - using fallback location")
-            // UPDATED: Fallback to Delhi coordinates for testing
-            onLocation("28.7041, 77.1025")
-        }, 15000)
-
-    } catch (e: Exception) {
-        Log.e("TAG", "requestCurrentLocation: Error requesting location", e)
-        onLocation("Location not available")
     }
 }
