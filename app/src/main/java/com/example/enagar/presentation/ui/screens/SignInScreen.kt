@@ -152,7 +152,7 @@ fun SignInScreen(navController: NavHostController) {
                             if (selectedRole == "User") {
                                 navController.navigate(Screen.Home.route)
                             } else {
-                                navController.navigate(Screen.FieldWorkerDashboard.route)
+                                navController.navigate(Screen.FieldWorkerMain.route)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
