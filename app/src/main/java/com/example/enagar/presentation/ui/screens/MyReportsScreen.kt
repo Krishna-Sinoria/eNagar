@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.enagar.components.BottomNavBar
 
 data class MyReport(
     val id: Int,
@@ -28,7 +29,7 @@ data class MyReport(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyReportsScreen(navController: NavController, padding1: Modifier) {
+fun MyReportsScreen(navController: NavController) {
     // Dummy data
     val allReports = remember {
         listOf(
@@ -70,6 +71,7 @@ fun MyReportsScreen(navController: NavController, padding1: Modifier) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
+        bottomBar = { BottomNavBar(navController) },
         containerColor = colorScheme.background
     ) { padding ->
         Column(

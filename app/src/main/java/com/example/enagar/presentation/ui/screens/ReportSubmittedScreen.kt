@@ -111,17 +111,6 @@ fun ReportSubmittedScreen(navController: NavController) {
                     modifier = Modifier.size(64.dp)
                 )
             }
-//            // Animated illustration
-//            Image(
-//                painter = painterResource(id = R.drawable.success_illustration),
-//                contentDescription = "Success Illustration",
-//                contentScale = ContentScale.Fit,
-//                modifier = Modifier
-//                    .size(150.dp)
-//                    .offset(y = illustrationOffsetY.dp)
-//                    .alpha(illustrationAlpha)
-//                    .padding(bottom = 16.dp)
-//            )
 
             // Animated checkmark
 

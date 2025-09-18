@@ -6,6 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.enagar.components.BottomNavBar
 
 // Notification model
 data class NotificationItem(
@@ -25,12 +32,15 @@ data class NotificationItem(
     val title: String,
     val message: String,
     val time: String,
-    val type: String // Resolved, Comment, Update, Assigned, Received
+    val type: NotificationType // Resolved, Comment, Update, Assigned, Received
 )
+enum class NotificationType {
+    REPORT_RECEIVED, NEW_COMMENT, REPORT_UPDATE, REPORT_ASSIGNED, REPORT_RESOLVED
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationScreen(navController: NavController, padding1: Modifier) {
+fun NotificationScreen(navController: NavController) {
     val notifications = remember {
         listOf(
             NotificationItem(
@@ -38,36 +48,33 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
                 "Report Resolved",
                 "Your report regarding 'Pothole on Main St' has been marked as resolved by the city council.",
                 "2 hours ago",
-                "Resolved"
+                NotificationType.REPORT_RESOLVED
             ),
             NotificationItem(
                 2,
                 "New Comment",
                 "A new comment has been added to your report: \"We are looking into this.\"",
                 "Yesterday",
-                "Comment"
+                NotificationType.NEW_COMMENT
             ),
             NotificationItem(
                 3,
                 "Report Update",
                 "Your report 'Broken Streetlight' has been updated with new information.",
                 "3 days ago",
-                "Update"
-            ),
+                NotificationType.REPORT_UPDATE            ),
             NotificationItem(
                 4,
                 "Report Assigned",
                 "Your report 'Graffiti on Park Bench' has been assigned to a city official.",
                 "1 week ago",
-                "Assigned"
-            ),
+                NotificationType.REPORT_ASSIGNED            ),
             NotificationItem(
                 5,
                 "Report Received",
                 "Your report 'Overflowing Trash Can' has been received and is under review.",
                 "2 weeks ago",
-                "Received"
-            )
+                NotificationType.REPORT_RECEIVED            )
         )
     }
 
@@ -86,6 +93,7 @@ fun NotificationScreen(navController: NavController, padding1: Modifier) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
+        bottomBar = { BottomNavBar(navController) },
         containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(
@@ -108,11 +116,11 @@ fun NotificationCard(notification: NotificationItem) {
     val colorScheme = MaterialTheme.colorScheme
 
     val circleColor = when (notification.type) {
-        "Resolved" -> Color(0xFF2E7D32)
-        "Comment" -> Color(0xFF1976D2)
-        "Update" -> Color(0xFFD28F18)
-        "Assigned" -> Color(0xFF6A1B9A)
-        "Received" -> Color(0xFF455A64)
+        NotificationType.REPORT_RESOLVED -> Color(0xFF2E7D32)
+        NotificationType.REPORT_RECEIVED -> Color(0xFF1976D2)
+        NotificationType.REPORT_UPDATE -> Color(0xFFD28F18)
+        NotificationType.REPORT_ASSIGNED -> Color(0xFF6A1B9A)
+        NotificationType.NEW_COMMENT -> Color(0xFF455A64)
         else -> colorScheme.primary
     }
 
@@ -120,7 +128,7 @@ fun NotificationCard(notification: NotificationItem) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -134,11 +142,35 @@ fun NotificationCard(notification: NotificationItem) {
                     .background(circleColor.copy(alpha = 0.15f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
+                // Notification Icon
                 Box(
                     modifier = Modifier
-                        .size(16.dp)
-                        .background(circleColor, CircleShape)
-                )
+                        .size(40.dp)
+                        .background(
+                            when (notification.type) {
+                                NotificationType.REPORT_RECEIVED -> Color(0xFF2196F3)
+                                NotificationType.NEW_COMMENT -> Color(0xFF4CAF50)
+                                NotificationType.REPORT_UPDATE -> Color(0xFFFFA726)
+                                NotificationType.REPORT_ASSIGNED -> Color(0xFF9C27B0)
+                                NotificationType.REPORT_RESOLVED -> Color(0xFF4CAF50)
+                            },
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = when (notification.type) {
+                            NotificationType.REPORT_RECEIVED -> Icons.Default.CheckCircle
+                            NotificationType.NEW_COMMENT -> Icons.Default.Chat
+                            NotificationType.REPORT_UPDATE -> Icons.Default.Update
+                            NotificationType.REPORT_ASSIGNED -> Icons.Default.Assignment
+                            NotificationType.REPORT_RESOLVED -> Icons.Default.Done
+                        },
+                        contentDescription = "Notification Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

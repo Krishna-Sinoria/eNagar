@@ -17,33 +17,7 @@ import com.example.enagar.screens.ReportSubmittedScreen
 import com.example.enagar.screens.SignInScreen
 import com.example.enagar.screens.SignUpScreen
 
-sealed class Screen(val route: String) {
-    // Auth
-    object SignIn : Screen("Signin")
-    object SignUp : Screen("Signup")
 
-    // Main User Screens
-    object Home : Screen("Home")
-    object MyReports : Screen("My reports")
-    object Notifications : Screen("Notifications")
-    object Profile : Screen("Profile")
-
-    // Report Flow
-    object ReportIssue : Screen("report_issue")
-    object ReportSubmitted : Screen("report_submitted")
-
-    // Field Worker Screens
-    object FieldWorkerMain : Screen("field_worker_main") // BottomNav container
-    object FieldWorkerDashboard : Screen("field_worker_dashboard")
-    object FieldWorkerNotifications : Screen("field_worker_notifications")
-    object FieldWorkerProfile : Screen("field_worker_profile")
-    object TaskDetail : Screen("task_detail/{taskId}") {
-        fun createRoute(taskId: String) = "task_detail/$taskId"
-    }
-    object ResolveIssue : Screen("resolve_issue/{taskId}") {
-        fun createRoute(taskId: String) = "resolve_issue/$taskId"
-    }
-}
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
@@ -52,33 +26,18 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         // ---------- AUTH SCREENS ----------
         composable(Screen.SignIn.route) { SignInScreen(navController) }
         composable(Screen.SignUp.route) { SignUpScreen(navController) }
-
+        // Role USER
+        // ---------- MAIN USER SCREENS ----------
+        composable(Screen.Home.route) { HomeScreen(navController) }
+        composable(Screen.MyReports.route) {MyReportsScreen(navController)}
+        composable(Screen.Notifications.route) { NotificationScreen(navController)}
+        composable(Screen.Profile.route) {   ProfileScreen(navController) }
+        composable (Screen.AadhaarVerification.route){ AadhaarVerificationScreen(navController) }
         // ---------- REPORT FLOW ----------
         composable(Screen.ReportIssue.route) { ReportIssuesScreen(navController) }
         composable(Screen.ReportSubmitted.route) { ReportSubmittedScreen(navController) }
 
-        // ---------- MAIN USER SCREENS ----------
-        composable(Screen.Home.route) {
-            Scaffold(bottomBar = { BottomNavBar(navController) }) { paddingValues ->
-                HomeScreen(navController, Modifier.padding(paddingValues))
-            }
-        }
-        composable(Screen.MyReports.route) {
-            Scaffold(bottomBar = { BottomNavBar(navController) }) { paddingValues ->
-                MyReportsScreen(navController, Modifier.padding(paddingValues))
-            }
-        }
-        composable(Screen.Notifications.route) {
-            Scaffold(bottomBar = { BottomNavBar(navController) }) { paddingValues ->
-                NotificationScreen(navController, Modifier.padding(paddingValues))
-            }
-        }
-        composable(Screen.Profile.route) {
-            Scaffold(bottomBar = { BottomNavBar(navController) }) { paddingValues ->
-                ProfileScreen(navController, Modifier.padding(paddingValues))
-            }
-        }
-
+        // Role FIELD WORKER
         // ---------- FIELD WORKER FLOW ----------
         composable(Screen.FieldWorkerMain.route) {
             // Main container with its own bottom nav
@@ -94,5 +53,6 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             val taskId = backStackEntry.arguments?.getString("taskId") ?: return@composable
             ResolveIssueScreen(navController = navController, taskId = taskId)
         }
+
     }
 }
