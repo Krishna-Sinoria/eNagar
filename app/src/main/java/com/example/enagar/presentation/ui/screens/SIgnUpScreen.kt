@@ -57,7 +57,7 @@ fun SignUpScreen(navController: NavHostController) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(180.dp)
+                modifier = Modifier.size(200.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

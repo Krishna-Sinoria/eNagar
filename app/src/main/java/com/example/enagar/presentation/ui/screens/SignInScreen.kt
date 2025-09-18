@@ -23,8 +23,8 @@ import com.example.enagar.presentation.navigation.Screen
 
 @Composable
 fun SignInScreen(navController: NavHostController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("hacksmiths@gmail.com") }
+    var password by remember { mutableStateOf("hack@12345") }
     var selectedRole by remember { mutableStateOf("User") } // User or Field Worker
 
     val colorScheme = MaterialTheme.colorScheme
@@ -46,10 +46,10 @@ fun SignInScreen(navController: NavHostController) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(180.dp)
+                modifier = Modifier.size(200.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            //Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Welcome to eNagar",

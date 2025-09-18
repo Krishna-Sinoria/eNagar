@@ -54,6 +54,7 @@
 
 package com.example.enagar.presentation.ui.screens
 
+import android.R.color.white
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -77,7 +78,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.enagar.R
+import com.example.enagar.components.BottomNavBar
 import com.example.enagar.presentation.navigation.Screen
 
 // Data class for reports
@@ -136,7 +139,7 @@ fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
             )
         },
         bottomBar = {
-            BottomNavBar(navController)
+            BottomNavBar(navController as NavHostController)
         },
         containerColor = colorScheme.background
     ) { innerPadding ->
@@ -298,42 +301,42 @@ fun ReportCard(report: HomeReport) {
 }
 
 // Reusable bottom nav
-@Composable
-fun BottomNavBar(navController: NavController) {
-    val colorScheme = MaterialTheme.colorScheme
-    val items = listOf(
-        Screen.Home.route to Icons.Default.Home,
-        Screen.MyReports.route to Icons.Default.List,
-        Screen.Notifications.route to Icons.Default.Notifications,
-        Screen.Profile.route to Icons.Default.Person
-    )
-    var selectedItem by remember { mutableStateOf(0) }
-
-    NavigationBar(
-        containerColor = colorScheme.primary,
-        tonalElevation = 8.dp
-    ) {
-        items.forEachIndexed { index, (route, icon) ->
-            NavigationBarItem(
-                selected = selectedItem == index,
-                onClick = {
-                    selectedItem = index
-                    navController.navigate(route)
-                },
-                icon = {
-                    Icon(
-                        icon,
-                        contentDescription = route,
-                        tint = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
-                },
-                label = {
-                    Text(
-                        route.substringAfterLast('.'),
-                        color = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
-                }
-            )
-        }
-    }
-}
+//@Composable
+//fun BottomNavBar(navController: NavController) {
+//    val colorScheme = MaterialTheme.colorScheme
+//    val items = listOf(
+//        Screen.Home.route to Icons.Default.Home,
+//        Screen.MyReports.route to Icons.Default.List,
+//        Screen.Notifications.route to Icons.Default.Notifications,
+//        Screen.Profile.route to Icons.Default.Person
+//    )
+//    var selectedItem by remember { mutableStateOf(0) }
+//
+//    NavigationBar(
+//        containerColor = colorScheme.primary,
+//        tonalElevation = 8.dp
+//    ) {
+//        items.forEachIndexed { index, (route, icon) ->
+//            NavigationBarItem(
+//                selected = selectedItem == index,
+//                onClick = {
+//                    selectedItem = index
+//                    navController.navigate(route)
+//                },
+//                icon = {
+//                    Icon(
+//                        icon,
+//                        contentDescription = route,
+//                        tint = if (selectedItem == index) colorScheme.background else Color.White.copy(alpha = 0.7f)
+//                    )
+//                },
+//                label = {
+//                    Text(
+//                        route.substringAfterLast('.'),
+//                        color = if (selectedItem == index) colorScheme.background else Color.White.copy(alpha = 0.7f)
+//                    )
+//                }
+//            )
+//        }
+//    }
+//}

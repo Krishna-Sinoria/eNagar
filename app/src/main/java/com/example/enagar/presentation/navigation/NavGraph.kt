@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.enagar.components.BottomNavBar
 import com.example.enagar.presentation.ui.screens.*
 import com.example.enagar.screens.MyReportsScreen
 import com.example.enagar.screens.NotificationScreen
@@ -18,14 +19,14 @@ import com.example.enagar.screens.SignUpScreen
 
 sealed class Screen(val route: String) {
     // Auth
-    object SignIn : Screen("signin")
-    object SignUp : Screen("signup")
+    object SignIn : Screen("Signin")
+    object SignUp : Screen("Signup")
 
     // Main User Screens
-    object Home : Screen("home")
-    object MyReports : Screen("my_reports")
-    object Notifications : Screen("notifications")
-    object Profile : Screen("profile")
+    object Home : Screen("Home")
+    object MyReports : Screen("My reports")
+    object Notifications : Screen("Notifications")
+    object Profile : Screen("Profile")
 
     // Report Flow
     object ReportIssue : Screen("report_issue")

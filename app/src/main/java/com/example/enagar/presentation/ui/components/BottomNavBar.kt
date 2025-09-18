@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Report
+import androidx.compose.material.icons.filled.Start
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +41,7 @@ fun BottomNavBar(navController: NavHostController) {
 
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = colorScheme.surface,
+        containerColor = colorScheme.primary,
         tonalElevation = 8.dp
     ) {
         items.forEach { item ->
@@ -55,14 +56,14 @@ fun BottomNavBar(navController: NavHostController) {
                         }
                     }
                 },
-                icon = { Icon(item.icon, contentDescription = item.label, tint = colorScheme.onSurfaceVariant) },
-                label = { Text(item.label, color = colorScheme.onSurfaceVariant) },
+                icon = { Icon(item.icon, contentDescription = item.label, tint = colorScheme.background) },
+                label = { Text(item.label, color = colorScheme.background) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = colorScheme.onSurfaceVariant,
-                    selectedTextColor = colorScheme.onSurfaceVariant,
-                    unselectedIconColor = colorScheme.onSurfaceVariant,
-                    unselectedTextColor = colorScheme.onSurfaceVariant,
-                    indicatorColor = Color.Transparent // no highlight bubble
+                    selectedIconColor = colorScheme.background,
+                    selectedTextColor = colorScheme.background,
+                    unselectedIconColor = Color.White,
+                    unselectedTextColor = Color.White,
+
                 )
             )
         }
