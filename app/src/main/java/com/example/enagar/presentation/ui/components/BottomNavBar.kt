@@ -1,6 +1,5 @@
 package com.example.enagar.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -19,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.enagar.presentation.navigation.Screen
 
-
 data class BottomNavItem(
     val route: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -29,8 +27,7 @@ data class BottomNavItem(
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavItem(
-            Screen.Home.route, Icons.Default.Home, "Home"),
+        BottomNavItem(Screen.Home.route, Icons.Default.Home, "Home"),
         BottomNavItem(Screen.MyReports.route, Icons.Default.Report, "Reports"),
         BottomNavItem(Screen.Notifications.route, Icons.Default.Notifications, "Notifications"),
         BottomNavItem(Screen.Profile.route, Icons.Default.Person, "Profile")
@@ -43,13 +40,12 @@ fun BottomNavBar(navController: NavHostController) {
 
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = colorScheme.primary,
+        containerColor = colorScheme.surface,
         tonalElevation = 8.dp
     ) {
         items.forEach { item ->
-            val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true
             NavigationBarItem(
-                selected = isSelected,
+                selected = false, // 👈 Always false (no selection effect)
                 onClick = {
                     if (currentDestination?.route != item.route) {
                         navController.navigate(item.route) {
@@ -59,19 +55,15 @@ fun BottomNavBar(navController: NavHostController) {
                         }
                     }
                 },
-                icon = {
-                    Icon(
-                        item.icon,
-                        contentDescription = item.label,
-                        tint = if (isSelected) colorScheme.secondary else colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                },
-                label = {
-                    Text(
-                        item.label,
-                        color = if (isSelected) colorScheme.secondary else colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
+                icon = { Icon(item.icon, contentDescription = item.label, tint = colorScheme.onSurfaceVariant) },
+                label = { Text(item.label, color = colorScheme.onSurfaceVariant) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.onSurfaceVariant,
+                    selectedTextColor = colorScheme.onSurfaceVariant,
+                    unselectedIconColor = colorScheme.onSurfaceVariant,
+                    unselectedTextColor = colorScheme.onSurfaceVariant,
+                    indicatorColor = Color.Transparent // no highlight bubble
+                )
             )
         }
     }
