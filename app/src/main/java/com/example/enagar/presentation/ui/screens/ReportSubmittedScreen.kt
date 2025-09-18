@@ -9,9 +9,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
@@ -29,9 +31,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.animation.OvershootInterpolator
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.enagar.R
 import com.example.enagar.presentation.navigation.Screen
+import com.example.enagar.presentation.viewModel.CitizenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -39,14 +43,14 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportSubmittedScreen(navController: NavController) {
+    val vm : CitizenViewModel = hiltViewModel()
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val isDarkTheme = isSystemInDarkTheme()
 
     // Generate a report ID
-    val reportId = remember { "REP-${UUID.randomUUID().toString().take(8).uppercase()}" }
-
+    val reportId = vm.reportId.value
     // Animation for checkmark
     val scaleAnim = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
@@ -92,17 +96,32 @@ fun ReportSubmittedScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Animated illustration
-            Image(
-                painter = painterResource(id = R.drawable.success_illustration),
-                contentDescription = "Success Illustration",
-                contentScale = ContentScale.Fit,
+            Box(
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(120.dp)
+                    .background(Color(0xFF4CAF50), CircleShape)
                     .offset(y = illustrationOffsetY.dp)
-                    .alpha(illustrationAlpha)
-                    .padding(bottom = 16.dp)
-            )
+                    .alpha(illustrationAlpha),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Success",
+                    tint = Color.White,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+//            // Animated illustration
+//            Image(
+//                painter = painterResource(id = R.drawable.success_illustration),
+//                contentDescription = "Success Illustration",
+//                contentScale = ContentScale.Fit,
+//                modifier = Modifier
+//                    .size(150.dp)
+//                    .offset(y = illustrationOffsetY.dp)
+//                    .alpha(illustrationAlpha)
+//                    .padding(bottom = 16.dp)
+//            )
 
             // Animated checkmark
 
@@ -153,12 +172,12 @@ fun ReportSubmittedScreen(navController: NavController) {
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = { navController.navigate(Screen.Home.route) },
+                onClick = { navController.popBackStack() },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D4C41), contentColor = Color.White)
             ) {
-                Text("Go to Home")
+                Text("Go Back")
             }
 
             Spacer(Modifier.height(12.dp))

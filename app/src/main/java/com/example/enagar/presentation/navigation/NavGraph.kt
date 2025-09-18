@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +14,7 @@ import com.example.enagar.presentation.ui.screens.BottomNavBar
 import com.example.enagar.presentation.ui.screens.HomeScreen
 
 import com.example.enagar.presentation.ui.screens.ReportIssuesScreen
+import com.example.enagar.presentation.viewModel.CitizenViewModel
 
 import com.example.enagar.screens.FieldWorkerDashboardScreen
 import com.example.enagar.screens.MyReportsScreen
@@ -39,6 +41,7 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
+    val viewModel : CitizenViewModel = viewModel()
     NavHost(navController = navController, startDestination = Screen.SignIn.route) {
 
         // Auth Screens (No BottomNavBar)
