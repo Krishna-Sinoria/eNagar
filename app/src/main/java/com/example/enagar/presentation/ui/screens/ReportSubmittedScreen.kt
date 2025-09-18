@@ -99,7 +99,7 @@ fun ReportSubmittedScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .size(120.dp)
-                    .background(Color(0xFF4CAF50), CircleShape)
+                    .background(colorScheme.primary, CircleShape)
                     .offset(y = illustrationOffsetY.dp)
                     .alpha(illustrationAlpha),
                 contentAlignment = Alignment.Center
