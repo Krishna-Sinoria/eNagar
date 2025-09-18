@@ -1,57 +1,3 @@
-//package com.example.enagar.screens
-//
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.Composable
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.unit.dp
-//import androidx.navigation.NavController
-//import com.example.enagar.navigation.Screen
-//
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun HomeScreen(navController: NavController, padding1: Modifier) {
-//    Scaffold(
-//        topBar = { TopAppBar(title = { Text("eNagar - Home") }) }
-//    ) { padding ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(padding)
-//                .padding(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(16.dp)
-//        ) {
-//            Button(
-//                onClick = { navController.navigate(Screen.ReportIssue.route) },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Report an Issue")
-//            }
-//
-//            Button(
-//                onClick = { navController.navigate(Screen.MyReports.route) },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("My Reports")
-//            }
-//
-//            Button(
-//                onClick = { navController.navigate(Screen.Notifications.route) },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Notifications")
-//            }
-//
-//            Button(
-//                onClick = { navController.navigate(Screen.Profile.route) },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Profile")
-//            }
-//        }
-//    }
-//}
-
 package com.example.enagar.presentation.ui.screens
 
 import androidx.compose.foundation.Image
@@ -78,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.enagar.R
+import com.example.enagar.components.BottomNavBar
 import com.example.enagar.presentation.navigation.Screen
 
 // Data class for reports
@@ -91,7 +38,7 @@ data class HomeReport(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, padding1: Modifier = Modifier) {
+fun HomeScreen(navController: NavController) {
 
     val colorScheme = MaterialTheme.colorScheme
 
@@ -293,47 +240,6 @@ fun ReportCard(report: HomeReport) {
                 Text(report.title, fontWeight = FontWeight.Bold, color = colorScheme.onBackground, fontSize = 16.sp)
                 Text(report.status, color = colorScheme.onBackground.copy(alpha = 0.7f), fontSize = 14.sp)
             }
-        }
-    }
-}
-
-// Reusable bottom nav
-@Composable
-fun BottomNavBar(navController: NavController) {
-    val colorScheme = MaterialTheme.colorScheme
-    val items = listOf(
-        Screen.Home.route to Icons.Default.Home,
-        Screen.MyReports.route to Icons.Default.List,
-        Screen.Notifications.route to Icons.Default.Notifications,
-        Screen.Profile.route to Icons.Default.Person
-    )
-    var selectedItem by remember { mutableStateOf(0) }
-
-    NavigationBar(
-        containerColor = colorScheme.primary,
-        tonalElevation = 8.dp
-    ) {
-        items.forEachIndexed { index, (route, icon) ->
-            NavigationBarItem(
-                selected = selectedItem == index,
-                onClick = {
-                    selectedItem = index
-                    navController.navigate(route)
-                },
-                icon = {
-                    Icon(
-                        icon,
-                        contentDescription = route,
-                        tint = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
-                },
-                label = {
-                    Text(
-                        route.substringAfterLast('.'),
-                        color = if (selectedItem == index) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
-                }
-            )
         }
     }
 }
