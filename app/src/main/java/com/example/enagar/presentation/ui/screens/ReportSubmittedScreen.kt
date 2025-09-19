@@ -145,13 +145,13 @@ fun ReportSubmittedScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Report ID: $reportId",
+                    text = "Report ID: ${vm.reportId.value}",
                     color = Color(0xFF6D4C41),
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = {
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("Report ID", reportId)
+                    val clip = ClipData.newPlainText("Report ID", vm.reportId.value)
                     clipboard.setPrimaryClip(clip)
                 }) {
                     Text("Copy", color = Color(0xFF6D4C41))
