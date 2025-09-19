@@ -111,17 +111,6 @@ fun ReportSubmittedScreen(navController: NavController) {
                     modifier = Modifier.size(64.dp)
                 )
             }
-//            // Animated illustration
-//            Image(
-//                painter = painterResource(id = R.drawable.success_illustration),
-//                contentDescription = "Success Illustration",
-//                contentScale = ContentScale.Fit,
-//                modifier = Modifier
-//                    .size(150.dp)
-//                    .offset(y = illustrationOffsetY.dp)
-//                    .alpha(illustrationAlpha)
-//                    .padding(bottom = 16.dp)
-//            )
 
             // Animated checkmark
 
@@ -156,13 +145,13 @@ fun ReportSubmittedScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Report ID: $reportId",
+                    text = "Report ID: ${vm.reportId.value}",
                     color = Color(0xFF6D4C41),
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = {
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("Report ID", reportId)
+                    val clip = ClipData.newPlainText("Report ID", vm.reportId.value)
                     clipboard.setPrimaryClip(clip)
                 }) {
                     Text("Copy", color = Color(0xFF6D4C41))
