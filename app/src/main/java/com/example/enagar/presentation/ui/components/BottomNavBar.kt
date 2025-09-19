@@ -46,7 +46,7 @@ fun BottomNavBar(navController: NavHostController) {
     ) {
         items.forEach { item ->
             NavigationBarItem(
-                selected = false, // 👈 Always false (no selection effect)
+                selected = false,
                 onClick = {
                     if (currentDestination?.route != item.route) {
                         navController.navigate(item.route) {
