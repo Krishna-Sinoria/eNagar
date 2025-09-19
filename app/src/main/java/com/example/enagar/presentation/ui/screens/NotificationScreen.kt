@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.enagar.components.BottomNavBar
 
 // Notification model
@@ -93,7 +94,7 @@ fun NotificationScreen(navController: NavController) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colorScheme.primary)
             )
         },
-        bottomBar = { BottomNavBar(navController) },
+        bottomBar = { BottomNavBar(navController as NavHostController) },
         containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(

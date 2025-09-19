@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.enagar.R
 import com.example.enagar.components.BottomNavBar
 import com.example.enagar.presentation.navigation.Screen
@@ -83,7 +84,7 @@ fun HomeScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            BottomNavBar(navController)
+            BottomNavBar(navController as NavHostController)
         },
         containerColor = colorScheme.background
     ) { innerPadding ->
