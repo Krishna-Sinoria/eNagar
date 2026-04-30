@@ -112,6 +112,20 @@ fun ReportIssuesScreen(navController: NavController) {
     var location by remember { mutableStateOf("") }
     var isLocatonAvailable by remember { mutableStateOf(false) }
 
+
+
+
+    val success = vm.isSuccess.value   // 👈 observe success
+
+    // ✅ CORRECT PLACE FOR LaunchedEffect
+    LaunchedEffect(success) {
+        if (success) {
+            snackbarHostState.showSnackbar("Issue Reported Successfully")
+            navController.navigate(Screen.ReportSubmitted.route)
+            vm.generateReportId()
+        }
+    }
+
     val locationSettingsLauncher = rememberLauncherForActivityResult(
         contract= ActivityResultContracts.StartIntentSenderForResult()
     ) {
@@ -119,11 +133,13 @@ fun ReportIssuesScreen(navController: NavController) {
         Log.d("TAG", "ReportIssuesScreen: system location enable request")
         if (result.resultCode == android.app.Activity.RESULT_OK){
             // now try to fetch location
-            fetchLocation(context,fusedLocationClient){
-                loc->
-                location = loc
-                isLocatonAvailable = loc.isNotBlank() && loc != "Location not available"
-                Log.d("TAG", "ReportIssuesScreen: location after setting enabled")
+            fetchLocation(context, fusedLocationClient) { loc ->
+
+                Log.d("LOCATION_DEBUG", "From settings: $loc")
+
+                location = loc.trim()
+
+                isLocatonAvailable = location.contains(",") && location.split(",").size == 2
             }
         }else{
             Log.d("TAG", "Location settings not enabled by user")
@@ -184,11 +200,16 @@ fun ReportIssuesScreen(navController: NavController) {
         settingsClient.checkLocationSettings(locationSettingsRequest)
             .addOnSuccessListener{
                 Log.d("TAG", "checkAndRequestLocalionSettings: Location Setting already enabled")
-                fetchLocation(context,fusedLocationClient){loc->
-                    location = loc
-                    isLocatonAvailable = loc.isNotBlank() && loc != "Location not available"
-                    Log.d("TAG", "checkAndRequestLocalionSettings: location fetched successfully ${loc}")
+                fetchLocation(context, fusedLocationClient) { loc ->
 
+                    Log.d("LOCATION_DEBUG", "Raw location: $loc")
+
+                    // Expecting "lat,lng"
+                    location = loc.trim()
+
+                    isLocatonAvailable = location.contains(",") && location.split(",").size == 2
+
+                    Log.d("LOCATION_DEBUG", "Parsed location: $location")
                 }
             }
             .addOnFailureListener { exception ->
@@ -509,17 +530,42 @@ fun ReportIssuesScreen(navController: NavController) {
             // Submit Button
             Button(
 
+//
                 onClick = {
-                    Log.d("TAG", "ReportIssuesScreen: submit button ${report.location} && ${report.imageUri}")
-                    if (report.imageUri != null && report.location!!.isNotBlank()){
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Issue Reported Successfully")
-                            navController.navigate(Screen.ReportSubmitted.route)
-                            vm.generateReportId()
-                            Log.d("TAG", "ReportIssuesScreen: ${vm.reportId}")
+
+                    if (report.imageUri != null && !report.location.isNullOrBlank() && report.issueType != null) {
+
+                        val latLng = report.location?.split(",") ?: emptyList()
+
+                        if (latLng.size == 2 && latLng[0].isNotBlank() && latLng[1].isNotBlank()) {
+
+                            val lat = latLng[0].trim()
+                            val lng = latLng[1].trim()
+
+                            Log.d("FINAL_SUBMIT", "Lat: $lat, Lng: $lng")
+                            Log.d("FINAL_SUBMIT", "Image: ${report.imageUri}")
+
+                            vm.submitReportToBackend(
+                                problemType = report.issueType ?: "Other",
+                                description = report.description ?: "",
+                                latitude = lat,
+                                longitude = lng,
+                                imageUri = report.imageUri!!
+                            )
+
+//                            coroutineScope.launch {
+//                                snackbarHostState.showSnackbar("Issue Reported Successfully")
+//                                navController.navigate(Screen.ReportSubmitted.route)
+//                                vm.generateReportId()
+//                            }
+
+                        } else {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Invalid location format")
+                            }
                         }
-                    }
-                    else{
+
+                    } else {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar("Please fill all required details")
                         }
