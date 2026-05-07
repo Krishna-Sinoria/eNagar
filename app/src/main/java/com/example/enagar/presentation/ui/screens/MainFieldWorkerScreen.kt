@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.enagar.presentation.navigation.Screen
-import com.example.enagar.screens.FieldWorkerDashboardScreen
+
 
 /**
  * Main screen for the Field Worker with Scaffold and Bottom Navigation bar.

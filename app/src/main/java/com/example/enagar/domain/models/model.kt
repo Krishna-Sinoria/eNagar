@@ -7,7 +7,8 @@ data class ReportResponse(
     val status: String,
     val image: String?,
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    val createdAt: String?
 )
 
 data class SimpleResponse(

@@ -1,8 +1,34 @@
 package com.example.enagar.domain.models
 
+import com.google.gson.annotations.SerializedName
+
+
+
 data class Report(
-    val id: Int,
-    val title: String,
-    val status: String, // "Pending", "In Progress", "Resolved"
-    val date: String
+
+    val _id: String,
+
+    val problem_type: String,
+
+    val description: String,
+
+    val image: String?,
+
+    @SerializedName("latitude")
+    val lat: Double?,
+
+    @SerializedName("longitude")
+    val lng: Double?,
+
+    val status: String?,
+
+    val priority: String?,
+
+    val assignedTeam: String?,
+
+    val verificationStatus: String?,
+
+    val submission_date: String?,
+
+    val __v: Int?
 )

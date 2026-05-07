@@ -1,31 +1,59 @@
 package com.example.enagar.presentation.navigation
 
 sealed class Screen(val route: String) {
-    // Auth
+
+    // 🔐 AUTH
     object SignIn : Screen("signin")
     object SignUp : Screen("signup")
 
-    // Main User Screens
+
+    // 👤 USER
     object Home : Screen("home")
     object MyReports : Screen("my_reports")
     object Notifications : Screen("notifications")
     object Profile : Screen("profile")
 
-    // Report Flow
+
+    // 📝 REPORT FLOW
     object ReportIssue : Screen("report_issue")
-    object ReportSubmitted : Screen("report_submitted")
+    object ReportSubmitted : Screen("report_submitted/{reportId}") {
 
-    // Field Worker Screens
-    object FieldWorkerMain : Screen("field_worker_main") // BottomNav container
-    object FieldWorkerDashboard : Screen("field_worker_dashboard")
-    object FieldWorkerNotifications : Screen("field_worker_notifications")
-    object FieldWorkerProfile : Screen("field_worker_profile")
-    object TaskDetail : Screen("task_detail/{taskId}") {
-        fun createRoute(taskId: String) = "task_detail/$taskId"
+        fun createRoute(reportId: String): String {
+            return "report_submitted/$reportId"
+        }
     }
-    object ResolveIssue : Screen("resolve_issue/{taskId}") {
-        fun createRoute(taskId: String) = "resolve_issue/$taskId"
-    }
-
     object AadhaarVerification : Screen("aadhaar_verification")
+
+
+    // 👷 FIELD WORKER
+    object FieldWorkerMain : Screen("field_worker_main")
+
+    object FieldWorkerDashboard :
+        Screen("field_worker_dashboard")
+
+    object FieldWorkerNotifications :
+        Screen("field_worker_notifications")
+
+    object FieldWorkerProfile :
+        Screen("field_worker_profile")
+
+
+    // 📋 TASK DETAIL
+    object TaskDetail :
+        Screen("task_detail/{taskId}") {
+
+        fun createRoute(taskId: String): String {
+            return "task_detail/$taskId"
+        }
+    }
+
+
+    // ✅ RESOLVE ISSUE
+    object ResolveIssue :
+        Screen("resolve_issue/{taskId}") {
+
+        fun createRoute(taskId: String): String {
+            return "resolve_issue/$taskId"
+        }
+    }
 }

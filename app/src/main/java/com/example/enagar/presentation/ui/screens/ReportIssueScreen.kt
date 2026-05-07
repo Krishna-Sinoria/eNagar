@@ -1,4 +1,3 @@
-
 package com.example.enagar.presentation.ui.screens
 
 import android.content.IntentSender
@@ -13,56 +12,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Traffic
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Water
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,29 +36,25 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.enagar.domain.models.IssueType
 import com.example.enagar.presentation.navigation.Screen
 import com.example.enagar.presentation.ui.components.ReportIssueDescription
 import com.example.enagar.presentation.ui.components.ReportIssueTopBar
-import com.example.enagar.presentation.ui.utility_functions.IssueTypeItem
 import com.example.enagar.presentation.ui.utility_functions.createImageUri
 import com.example.enagar.presentation.ui.utility_functions.fetchLocation
 import com.example.enagar.presentation.viewModel.CitizenViewModel
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.Priority
+import com.google.android.gms.location.*
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportIssuesScreen(navController: NavController) {
-    val vm : CitizenViewModel = hiltViewModel()
-    val report = vm.issueReport.value
 
+    val vm: CitizenViewModel = hiltViewModel()
+    val report = vm.issueReport.value
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -105,171 +62,174 @@ fun ReportIssuesScreen(navController: NavController) {
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var tempUri by remember { mutableStateOf<Uri?>(null) }
+
+    var location by remember { mutableStateOf("") }
+    var isLocationAvailable by remember { mutableStateOf(false) }
+
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var cameraPermissionGranted by remember { mutableStateOf(false) }
-    var permissionDenied by remember { mutableStateOf(false) }
-    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var location by remember { mutableStateOf("") }
-    var isLocatonAvailable by remember { mutableStateOf(false) }
 
+    var selectedIssueType by remember { mutableStateOf("") }
+    var otherProblemType by remember { mutableStateOf("") }
 
+    var isSubmitting by remember { mutableStateOf(false) }
 
+    val fusedLocationClient =
+        remember { LocationServices.getFusedLocationProviderClient(context) }
 
-    val success = vm.isSuccess.value   // 👈 observe success
+    val success = vm.isSuccess.value
 
-    // ✅ CORRECT PLACE FOR LaunchedEffect
     LaunchedEffect(success) {
+
         if (success) {
-            snackbarHostState.showSnackbar("Issue Reported Successfully")
-            navController.navigate(Screen.ReportSubmitted.route)
-            vm.generateReportId()
-        }
-    }
 
-    val locationSettingsLauncher = rememberLauncherForActivityResult(
-        contract= ActivityResultContracts.StartIntentSenderForResult()
-    ) {
-        result->
-        Log.d("TAG", "ReportIssuesScreen: system location enable request")
-        if (result.resultCode == android.app.Activity.RESULT_OK){
-            // now try to fetch location
-            fetchLocation(context, fusedLocationClient) { loc ->
+            isSubmitting = false
 
-                Log.d("LOCATION_DEBUG", "From settings: $loc")
-
-                location = loc.trim()
-
-                isLocatonAvailable = location.contains(",") && location.split(",").size == 2
-            }
-        }else{
-            Log.d("TAG", "Location settings not enabled by user")
-            Toast.makeText(context, "Location is required for this feature", Toast.LENGTH_LONG).show() }
-    }
-    // camera launcher
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success->
-        if (success){
-            selectedImageUri = tempUri
-        }
-        else{
-            Toast.makeText(context,"Image capture failed", Toast.LENGTH_LONG).show()
-        }
-    }
-    // location permission launcher
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract  = ActivityResultContracts.RequestMultiplePermissions()
-    ){permissions->
-        locationPermissionGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (locationPermissionGranted ){
-
-
-        }
-        else{
-            permissionDenied = true
-        }
-    }
-    // camera permission launcher
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ){
-        isGranted->
-        cameraPermissionGranted = isGranted
-        if (!isGranted){
-            Toast.makeText(context,"Camera permission is required to capture images", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    fun checkAndRequestLocalionSettings(){
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, // priority
-            1000L                            // interval in millis
+            snackbarHostState.showSnackbar(
+                "Issue Reported Successfully"
             )
-            .setMinUpdateIntervalMillis(500L)
-            .setMaxUpdateDelayMillis(1000L)
-            .build()
 
-        val locationSettingsRequest = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-            .setAlwaysShow(true)
-            .build()
+            navController.navigate(
+                Screen.ReportSubmitted.createRoute(
+                    vm.reportId.value
+                )
+            )
+            vm.isSuccess.value = false
+        }
+    }
 
-        val settingsClient = LocationServices.getSettingsClient(context)
-        settingsClient.checkLocationSettings(locationSettingsRequest)
-            .addOnSuccessListener{
-                Log.d("TAG", "checkAndRequestLocalionSettings: Location Setting already enabled")
+    // ---------------- LOCATION SETTINGS ----------------
+
+    val locationSettingsLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartIntentSenderForResult()
+        ) { result ->
+
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+
                 fetchLocation(context, fusedLocationClient) { loc ->
 
-                    Log.d("LOCATION_DEBUG", "Raw location: $loc")
-
-                    // Expecting "lat,lng"
                     location = loc.trim()
 
-                    isLocatonAvailable = location.contains(",") && location.split(",").size == 2
-
-                    Log.d("LOCATION_DEBUG", "Parsed location: $location")
+                    isLocationAvailable =
+                        location.contains(",") && location.split(",").size == 2
                 }
+            } else {
+                Toast.makeText(
+                    context,
+                    "Location is required",
+                    Toast.LENGTH_LONG
+                ).show()
             }
-            .addOnFailureListener { exception ->
-                if (exception is ResolvableApiException){
-                    try {
-                        val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
-                        locationSettingsLauncher.launch(intentSenderRequest)
-                    }catch (e: IntentSender.SendIntentException){
-                        Log.e("TAG", "Error showing location settings dialog", e)
-                        Toast.makeText(context, "Unable to show location settings", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                else{
-                    Log.e("TAG", "Location settings check failed", exception)
-                    Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-
-
-    }
-
-    fun chedkAndRequestLocationPermission(){
-        Log.d("TAG", "chedkAndRequestLocationPermission: ab location permission milni chiye ")
-        val fineLocationGranted = ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val coarseLocationGranted = ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        Log.d("TAG", "chedkAndRequestLocationPermission: fineLocatin value -> ${fineLocationGranted} and coarseLocation value-> ${coarseLocationGranted}")
-        if (fineLocationGranted || coarseLocationGranted){
-            locationPermissionGranted = true
-            checkAndRequestLocalionSettings()
         }
-        else{
-            Log.d("TAG", "Location permissions not granted, requesting permissions")
-            // request location permission
+
+    // ---------------- CAMERA ----------------
+
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.TakePicture()
+        ) { success ->
+
+            if (success) {
+                selectedImageUri = tempUri
+                tempUri?.let {
+                    vm.setImageUri(it)
+                }
+            } else {
+                Toast.makeText(
+                    context,
+                    "Image capture failed",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    // ---------------- LOCATION PERMISSION ----------------
+
+    val locationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+
+            locationPermissionGranted =
+                permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                        permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+            if (locationPermissionGranted) {
+                checkAndRequestLocationSettings(
+                    context = context,
+                    fusedLocationClient = fusedLocationClient
+                ) { loc ->
+                    location = loc
+                    isLocationAvailable = true
+                }
+            }
+        }
+
+    // ---------------- CAMERA PERMISSION ----------------
+
+    val cameraPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+
+            cameraPermissionGranted = granted
+
+            if (!granted) {
+                Toast.makeText(
+                    context,
+                    "Camera permission required",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    // ---------------- INITIAL CHECK ----------------
+
+    LaunchedEffect(Unit) {
+
+        cameraPermissionGranted =
+            ActivityCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+
+        val fineLocationGranted =
+            ActivityCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseLocationGranted =
+            ActivityCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+        if (fineLocationGranted || coarseLocationGranted) {
+
+            locationPermissionGranted = true
+
+            checkAndRequestLocationSettings(
+                context = context,
+                fusedLocationClient = fusedLocationClient
+            ) { loc ->
+                location = loc
+                isLocationAvailable = true
+            }
+
+        } else {
+
             locationPermissionLauncher.launch(
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             )
         }
     }
 
-    // Automatically request permission when this screen loads
-    LaunchedEffect(Unit) {
-
-        chedkAndRequestLocationPermission()
-        // check camera permission
-        cameraPermissionGranted = ActivityCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
-
-
-    }
+    // ---------------- ISSUE TYPES ----------------
 
     val issueTypes = listOf(
         IssueType("Pothole", Icons.Default.Warning),
@@ -280,14 +240,40 @@ fun ReportIssuesScreen(navController: NavController) {
         IssueType("Other", Icons.Default.MoreHoriz)
     )
 
+    // ---------------- LOADING DIALOG ----------------
 
+    if (isSubmitting) {
 
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {},
+            title = {
+                Text("Submitting Report")
+            },
+            text = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    CircularProgressIndicator()
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text("Please wait...")
+                }
+            }
+        )
+    }
 
     Scaffold(
-        snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
-        topBar = {ReportIssueTopBar(navController) },
-        containerColor = colorScheme.background
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+        topBar = {
+            ReportIssueTopBar(navController)
+        }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -295,297 +281,364 @@ fun ReportIssuesScreen(navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+
             Text(
                 text = "Upload a photo, select type and provide details.",
                 fontSize = 16.sp,
-                color = colorScheme.primary,
-                modifier = Modifier.padding(bottom = 24.dp)
+                color = MaterialTheme.colorScheme.primary
             )
 
-            // Photo Upload Section
-            Column(modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ---------------- IMAGE CARD ----------------
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+                shape = RoundedCornerShape(12.dp)
             ) {
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .aspectRatio(1f)
-                        .background(color =  if (selectedImageUri != null) Color.Transparent else Color(0xFFD1CDCD))
-                    ,
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (selectedImageUri != null) Color.Transparent else Color(0xFFD1CDCD)
+                if (selectedImageUri != null) {
 
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    // show  image if available
-                    if (selectedImageUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(selectedImageUri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
 
-                        // display captured image
-                        selectedImageUri?.let { uri->
-                            vm.setImageUri(uri)
-                            Image(
-                                painter = rememberAsyncImagePainter(uri),
-                                contentDescription = "Captured Image",
-                                modifier = Modifier.fillMaxSize()
-                                ,
-                                contentScale = ContentScale.Fit
-                            )
+                } else {
+
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        Text("No Photo Selected")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ---------------- CAMERA BUTTON ----------------
+
+            Button(
+                onClick = {
+
+                    if (!isLocationAvailable) {
+
+                        Toast.makeText(
+                            context,
+                            "Location not available",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    if (cameraPermissionGranted) {
+
+                        val uri = createImageUri(context)
+
+                        uri?.let {
+                            tempUri = it
+                            cameraLauncher.launch(it)
                         }
 
                     } else {
-                        // Placeholder
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No Photo Selected",
-                                color = colorScheme.primary,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
 
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                // camera Button
-                Button(
-                    onClick = {
-                        Log.d("TAG", "Capture Photo clicked")
-                        // check location permission and availability
-                        if (!isLocatonAvailable){
-                            chedkAndRequestLocationPermission()
-                            return@Button
-                        }
-                        if (cameraPermissionGranted){
-                            val uri = createImageUri(context)
-                            if (uri!= null){
-                                tempUri = uri
-                                cameraLauncher.launch(uri)
-                            }else{
-                                Toast.makeText(context, "Failed to create image URI", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        else{
-                            // if permission is not granted then request for permission
-                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(),
-//                    enabled = isLocatonAvailable
-
-                ) {
-                    Row (modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 3.dp, end = 3.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically){
-                        Icon(
-                            imageVector = Icons.Default.CameraAlt,
-                            contentDescription = "Capture Photo",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            text = "Capture Photo",
-                            color = Color.White,
-                            fontSize = 16.sp
+                        cameraPermissionLauncher.launch(
+                            android.Manifest.permission.CAMERA
                         )
                     }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
 
+                Icon(Icons.Default.CameraAlt, null)
 
-                if (permissionDenied){
-                    LaunchedEffect(permissionDenied) {
-                        snackbarHostState.showSnackbar("Location permission is required to auto-detect location.")
-                        Toast.makeText(context,"Location permission is required to auto-detect location.", Toast.LENGTH_LONG).show()
-                        permissionDenied = false
-                    }
+                Spacer(modifier = Modifier.width(8.dp))
 
-                }
-
+                Text("Capture Photo")
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Location Section
-            Card(modifier = Modifier
-                .fillMaxWidth()
-                .padding(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.background
-                ),
-                elevation = CardDefaults.elevatedCardElevation(5.dp),
-                border = CardDefaults.outlinedCardBorder(true)) {
-                // Location Section
-                Column(modifier = Modifier
-                    .padding(0.dp)
-                    .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment =Alignment.CenterHorizontally,
+            // ---------------- LOCATION ----------------
+
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     Text(
                         text = "Location",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(5.dp)
+                        fontWeight = FontWeight.Bold
                     )
 
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // Map Area
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .background(colorScheme.background,)
-                            .padding(0.dp)
-                    ) {
-                        Column(modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.LocationOn,
-                                contentDescription = "Current Location",
-                                tint = Color.Red,
-                                modifier = Modifier
+                    Icon(
+                        Icons.Default.LocationOn,
+                        null,
+                        tint = Color.Red
+                    )
 
-                                    .size(32.dp)
-                            )
-                            if (location.isNotBlank()){
-                                vm.setLocation(location)
-                                Text(
-                                    text = "Location: $location",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
-                                    fontSize = 14.sp,
-                                    color = colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                        }
-
-                    }
+                    Text(
+                        text = location.ifBlank { "Fetching location..." },
+                        textAlign = TextAlign.Center
+                    )
                 }
-
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Problem Type Section
+            // ---------------- PROBLEM TYPE ----------------
+
             Text(
                 text = "Problem Type",
-                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .align(Alignment.CenterHorizontally),
-                color = colorScheme.primary
+                fontSize = 18.sp
             )
 
-
+            Spacer(modifier = Modifier.height(12.dp))
 
             LazyColumn(
                 modifier = Modifier.height(240.dp)
             ) {
+
                 items(issueTypes.chunked(3)) { rowItems ->
+
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        rowItems.forEach { issue ->
-                            IssueTypeItem(issue){selectedIssue->
-                                vm.setIssueType(selectedIssue.name)
 
+                        rowItems.forEach { issue ->
+
+                            val isSelected =
+                                selectedIssueType == issue.name
+
+                            Card(
+                                modifier = Modifier
+                                    .padding(6.dp)
+                                    .size(100.dp)
+                                    .clickable {
+
+                                        selectedIssueType = issue.name
+
+                                        vm.setIssueType(issue.name)
+                                    }
+                                    .border(
+                                        width = if (isSelected) 2.dp else 0.dp,
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.primary
+                                        else
+                                            Color.Transparent,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
+                                colors = CardDefaults.cardColors(
+                                    containerColor =
+                                        if (isSelected)
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.surface
+                                )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+
+                                    Icon(
+                                        imageVector = issue.icon,
+                                        contentDescription = null
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    Text(issue.name)
+                                }
                             }
-                        }
-                        // Fill remaining space if less than 3 items
-                        repeat(3 - rowItems.size) {
-                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // ---------------- OTHER FIELD ----------------
+
+            if (selectedIssueType == "Other") {
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = otherProblemType,
+                    onValueChange = {
+                        otherProblemType = it
+                    },
+                    label = {
+                        Text("Enter Problem Type")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ---------------- DESCRIPTION ----------------
+
             ReportIssueDescription(vm)
 
-            // Description Section
+            Spacer(modifier = Modifier.height(30.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // ---------------- SUBMIT BUTTON ----------------
 
-            // Submit Button
             Button(
-
-//
                 onClick = {
 
-                    if (report.imageUri != null && !report.location.isNullOrBlank() && report.issueType != null) {
+                    if (isSubmitting) return@Button
 
-                        val latLng = report.location?.split(",") ?: emptyList()
+                    val finalProblemType =
+                        if (selectedIssueType == "Other")
+                            otherProblemType.trim()
+                        else
+                            selectedIssueType
 
-                        if (latLng.size == 2 && latLng[0].isNotBlank() && latLng[1].isNotBlank()) {
+                    if (selectedImageUri == null) {
 
-                            val lat = latLng[0].trim()
-                            val lng = latLng[1].trim()
-
-                            Log.d("FINAL_SUBMIT", "Lat: $lat, Lng: $lng")
-                            Log.d("FINAL_SUBMIT", "Image: ${report.imageUri}")
-
-                            vm.submitReportToBackend(
-                                problemType = report.issueType ?: "Other",
-                                description = report.description ?: "",
-                                latitude = lat,
-                                longitude = lng,
-                                imageUri = report.imageUri!!
-                            )
-
-//                            coroutineScope.launch {
-//                                snackbarHostState.showSnackbar("Issue Reported Successfully")
-//                                navController.navigate(Screen.ReportSubmitted.route)
-//                                vm.generateReportId()
-//                            }
-
-                        } else {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Invalid location format")
-                            }
-                        }
-
-                    } else {
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Please fill all required details")
+                            snackbarHostState.showSnackbar(
+                                "Please capture image"
+                            )
                         }
+
+                        return@Button
                     }
+
+                    if (finalProblemType.isBlank()) {
+
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Please select problem type"
+                            )
+                        }
+
+                        return@Button
+                    }
+
+                    if (location.isBlank()) {
+
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Location not available"
+                            )
+                        }
+
+                        return@Button
+                    }
+
+                    val latLng = location.split(",")
+
+                    if (latLng.size != 2) {
+
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Invalid location"
+                            )
+                        }
+
+                        return@Button
+                    }
+
+                    isSubmitting = true
+
+                    vm.submitReportToBackend(
+                        problemType = finalProblemType,
+                        description = report.description ?: "",
+                        latitude = latLng[0].trim(),
+                        longitude = latLng[1].trim(),
+                        imageUri = selectedImageUri!!
+                    )
                 },
+                enabled = !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorScheme.primary,
-                    contentColor = colorScheme.onPrimary
-                )
+                    .height(56.dp)
             ) {
-                Text(
-                    text = "Submit Report",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
+
+                if (isSubmitting) {
+
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text("Submitting...")
+
+                } else {
+
+                    Text("Submit Report")
+                }
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+fun checkAndRequestLocationSettings(
+    context: android.content.Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    onLocationReceived: (String) -> Unit
+) {
+
+    val locationRequest = LocationRequest.Builder(
+        Priority.PRIORITY_HIGH_ACCURACY,
+        1000L
+    ).build()
+
+    val builder = LocationSettingsRequest.Builder()
+        .addLocationRequest(locationRequest)
+
+    val client = LocationServices.getSettingsClient(context)
+
+    client.checkLocationSettings(builder.build())
+        .addOnSuccessListener {
+
+            fetchLocation(
+                context,
+                fusedLocationClient
+            ) { location ->
+
+                onLocationReceived(location)
+            }
+        }
+        .addOnFailureListener { exception ->
+
+            if (exception is ResolvableApiException) {
+
+                try {
+
+                    exception.startResolutionForResult(
+                        context as android.app.Activity,
+                        1001
+                    )
+
+                } catch (sendEx: IntentSender.SendIntentException) {
+
+                    sendEx.printStackTrace()
+                }
+            }
+        }
 }

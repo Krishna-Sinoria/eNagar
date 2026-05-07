@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.enagar.presentation.navigation.NavGraph
 import com.example.enagar.presentation.viewModel.CitizenViewModel
 import com.example.enagar.ui.theme.ENagarTheme

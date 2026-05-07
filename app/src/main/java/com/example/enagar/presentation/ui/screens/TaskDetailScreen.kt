@@ -1,121 +1,391 @@
 package com.example.enagar.presentation.ui.screens
 
-import androidx.compose.foundation.background
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.location.Location
+import android.net.Uri
+import android.os.Looper
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.enagar.presentation.navigation.Screen
-import com.example.enagar.screens.assignedTasks
-import com.example.enagar.screens.completedTasks
+import coil.compose.rememberAsyncImagePainter
+import com.example.enagar.presentation.viewModel.UploadViewModel
+import com.google.android.gms.location.*
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("MissingPermission")
 @Composable
-fun TaskDetailScreen(navController: NavHostController, taskId: String?) {
-    // In a real app, fetch task details from a ViewModel using the taskId
-    val task = assignedTasks.find { it.id == taskId }
-        ?: completedTasks.find { it.id == taskId }
-        ?: assignedTasks.first()
+fun TaskDetailScreen(
+    navController: NavHostController,
+    reportId: String
+) {
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Task #${task.id}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Details",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                modifier = Modifier.background(
-                    brush = Brush.horizontalGradient(
-                        listOf(Color(0xFF6D4C41), Color(0xFF8D6E63))
-                    )
-                )
+    val context = LocalContext.current
+
+    val uploadViewModel: UploadViewModel = hiltViewModel()
+
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    var latitude by remember {
+        mutableStateOf("Fetching...")
+    }
+
+    var longitude by remember {
+        mutableStateOf("Fetching...")
+    }
+
+    var isUploading by remember {
+        mutableStateOf(false)
+    }
+
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    // 🔥 Permission Launcher
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+
+            if (granted) {
+
+                getCurrentLocation(
+                    fusedLocationClient
+                ) { lat, lng ->
+
+                    latitude = lat
+                    longitude = lng
+                }
+
+            } else {
+
+                Toast.makeText(
+                    context,
+                    "Location permission denied",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    // 🔥 Auto Fetch Location
+    LaunchedEffect(Unit) {
+
+        if (
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+
+            getCurrentLocation(
+                fusedLocationClient
+            ) { lat, lng ->
+
+                latitude = lat
+                longitude = lng
+            }
+
+        } else {
+
+            permissionLauncher.launch(
+                Manifest.permission.ACCESS_FINE_LOCATION
             )
         }
+    }
+
+    // 📸 Image Picker
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+
+        selectedImageUri = uri
+    }
+
+    Scaffold(
+
+        topBar = {
+
+            TopAppBar(
+                title = {
+                    Text("Task Details")
+                }
+            )
+        }
+
     ) { padding ->
+
         Column(
+
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+
+            horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
+
             Text(
-                "Issue Details",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                text = "Report ID: $reportId",
+                style = MaterialTheme.typography.titleMedium
             )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 📍 Location Card
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+
+                    Text(
+                        text = "Current Location",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(text = "Latitude : $latitude")
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Text(text = "Longitude : $longitude")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 📷 Choose Image
+            Button(
+                onClick = {
+                    launcher.launch("image/*")
+                }
+            ) {
+
+                Text("Choose Completion Image")
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            InfoRow(label = "Title", value = task.title)
-            InfoRow(label = "Location", value = task.location)
-            InfoRow(label = "Priority", value = task.priority.name)
-            InfoRow(label = "Assigned", value = task.assignedTime)
+            // 🖼 Preview Image
+            selectedImageUri?.let { uri ->
 
-            Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = rememberAsyncImagePainter(uri),
+                    contentDescription = null,
 
-            Button(
-                onClick = { navController.navigate(Screen.ResolveIssue.createRoute(task.id)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6D4C41),
-                    contentColor = Color.White
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp),
+
+                    contentScale = ContentScale.Crop
                 )
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // 🚀 Upload Button
+            Button(
+
+                onClick = {
+
+                    if (selectedImageUri == null) {
+
+                        Toast.makeText(
+                            context,
+                            "Please select image",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    if (
+                        latitude == "Fetching..." ||
+                        longitude == "Fetching..."
+                    ) {
+
+                        Toast.makeText(
+                            context,
+                            "Location not available yet",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    isUploading = true
+
+                    val compressedFile =
+                        compressImage(
+                            context,
+                            selectedImageUri!!
+                        )
+
+                    uploadViewModel.uploadProof(
+                        context = context,
+                        reportId = reportId,
+                        file = compressedFile,
+                        lat = latitude,
+                        lng = longitude
+                    )
+
+                    Toast.makeText(
+                        context,
+                        "Uploading...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // 🔥 Delay navigation slightly
+                    android.os.Handler(
+                        Looper.getMainLooper()
+                    ).postDelayed({
+
+                        isUploading = false
+                        navController.popBackStack()
+
+                    }, 3000)
+                },
+
+                modifier = Modifier.fillMaxWidth(),
+
+                enabled = !isUploading
             ) {
-                Text("Resolve Issue", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                if (isUploading) {
+
+                    CircularProgressIndicator()
+
+                } else {
+
+                    Text("Upload Completion Proof")
+                }
             }
         }
     }
 }
 
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        HorizontalDivider()
-    }
+
+// 🔥 Get Current Location
+@SuppressLint("MissingPermission")
+fun getCurrentLocation(
+    fusedLocationClient: FusedLocationProviderClient,
+    onLocationReceived: (String, String) -> Unit
+) {
+
+    fusedLocationClient.lastLocation
+        .addOnSuccessListener { location: Location? ->
+
+            if (location != null) {
+
+                onLocationReceived(
+                    location.latitude.toString(),
+                    location.longitude.toString()
+                )
+
+            } else {
+
+                val locationRequest =
+                    LocationRequest.create().apply {
+
+                        priority =
+                            Priority.PRIORITY_HIGH_ACCURACY
+
+                        interval = 1000
+                        fastestInterval = 500
+                        numUpdates = 1
+                    }
+
+                fusedLocationClient.requestLocationUpdates(
+
+                    locationRequest,
+
+                    object : LocationCallback() {
+
+                        override fun onLocationResult(
+                            result: LocationResult
+                        ) {
+
+                            val freshLocation =
+                                result.lastLocation
+
+                            if (freshLocation != null) {
+
+                                onLocationReceived(
+                                    freshLocation.latitude.toString(),
+                                    freshLocation.longitude.toString()
+                                )
+                            }
+
+                            fusedLocationClient
+                                .removeLocationUpdates(this)
+                        }
+                    },
+
+                    Looper.getMainLooper()
+                )
+            }
+        }
+}
+
+
+// 🔥 Compress Image
+fun compressImage(
+    context: Context,
+    uri: Uri
+): File {
+
+    val inputStream =
+        context.contentResolver.openInputStream(uri)
+
+    val bitmap =
+        BitmapFactory.decodeStream(inputStream)
+
+    val file = File.createTempFile(
+        "compressed_",
+        ".jpg",
+        context.cacheDir
+    )
+
+    val outputStream =
+        FileOutputStream(file)
+
+    // ✅ Compress to 70%
+    bitmap.compress(
+        Bitmap.CompressFormat.JPEG,
+        70,
+        outputStream
+    )
+
+    outputStream.flush()
+    outputStream.close()
+
+    return file
 }
