@@ -31,6 +31,11 @@ import com.example.enagar.presentation.viewModel.UploadViewModel
 import com.google.android.gms.location.*
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.scale
+import androidx.core.content.FileProvider
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
@@ -45,6 +50,9 @@ fun TaskDetailScreen(
     val uploadViewModel: UploadViewModel = hiltViewModel()
 
     var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    var cameraImageUri by remember {
         mutableStateOf<Uri?>(null)
     }
 
@@ -123,6 +131,23 @@ fun TaskDetailScreen(
 
         selectedImageUri = uri
     }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+
+            contract =
+                ActivityResultContracts.TakePicture()
+
+        ) { success ->
+
+            if (
+                success &&
+                cameraImageUri != null
+            ) {
+
+                selectedImageUri =
+                    cameraImageUri
+            }
+        }
 
     Scaffold(
 
@@ -183,13 +208,47 @@ fun TaskDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // 📷 Choose Image
-            Button(
-                onClick = {
-                    launcher.launch("image/*")
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+
+                horizontalArrangement =
+                    Arrangement.spacedBy(12.dp)
             ) {
 
-                Text("Choose Completion Image")
+                // 🖼 Gallery
+                Button(
+
+                    onClick = {
+
+                        launcher.launch("image/*")
+                    },
+
+                    modifier = Modifier.weight(1f)
+
+                ) {
+
+                    Text("Gallery")
+                }
+
+                // 📸 Camera
+                Button(
+
+                    onClick = {
+
+                        val uri =
+                            createImageUri(context)
+
+                        cameraImageUri = uri
+
+                        cameraLauncher.launch(uri)
+                    },
+
+                    modifier = Modifier.weight(1f)
+
+                ) {
+
+                    Text("Camera")
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -362,30 +421,112 @@ fun compressImage(
     uri: Uri
 ): File {
 
+    // 📥 Open Input Stream
     val inputStream =
         context.contentResolver.openInputStream(uri)
 
-    val bitmap =
+    // 🖼 Decode Original Bitmap
+    val originalBitmap =
         BitmapFactory.decodeStream(inputStream)
 
+    // ✅ Resize Large Images
+    val maxWidth = 1080
+    val maxHeight = 1080
+
+    var width = originalBitmap.width
+    var height = originalBitmap.height
+
+    val ratioBitmap =
+        width.toFloat() / height.toFloat()
+
+    val ratioMax =
+        maxWidth.toFloat() / maxHeight.toFloat()
+
+    if (height > maxHeight || width > maxWidth) {
+
+        if (ratioBitmap < ratioMax) {
+
+            width =
+                (maxHeight * ratioBitmap).toInt()
+
+            height = maxHeight
+
+        } else if (ratioBitmap > ratioMax) {
+
+            height =
+                (maxWidth / ratioBitmap).toInt()
+
+            width = maxWidth
+
+        } else {
+
+            width = maxWidth
+            height = maxHeight
+        }
+    }
+
+    // 🔥 Create Resized Bitmap
+    val resizedBitmap =
+        originalBitmap.scale(width, height)
+
+    // 📂 Temp File
     val file = File.createTempFile(
+
         "compressed_",
+
         ".jpg",
+
         context.cacheDir
     )
 
     val outputStream =
         FileOutputStream(file)
 
-    // ✅ Compress to 70%
-    bitmap.compress(
+    // 🔥 Strong Compression
+    resizedBitmap.compress(
+
         Bitmap.CompressFormat.JPEG,
-        70,
+
+        40,
+
         outputStream
     )
 
     outputStream.flush()
     outputStream.close()
 
+    // 🧹 Cleanup Memory
+    originalBitmap.recycle()
+    resizedBitmap.recycle()
+
     return file
+
+
+}
+
+fun createImageUri(
+    context: Context
+): Uri {
+
+    val timeStamp =
+        SimpleDateFormat(
+            "yyyyMMdd_HHmmss",
+            Locale.getDefault()
+        ).format(Date())
+
+    val imageFile = File(
+
+        context.cacheDir,
+
+        "camera_$timeStamp.jpg"
+    )
+
+    return FileProvider.getUriForFile(
+
+        context,
+
+        "${context.packageName}.provider",
+
+        imageFile
+    )
 }

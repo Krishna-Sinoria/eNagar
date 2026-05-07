@@ -172,6 +172,27 @@ fun ReportCard(
 
 ) {
 
+    // 🔥 Button States
+    var startClicked by remember {
+
+        mutableStateOf(false)
+    }
+
+    var uploadClicked by remember {
+
+        mutableStateOf(false)
+    }
+
+    // 🔥 Status Checks
+    val isStarted =
+        report.status == "In Progress"
+
+    val isVerificationPending =
+        report.status == "Verification Pending"
+
+    val isCompleted =
+        report.status == "Completed"
+
     Card(
 
         modifier = Modifier.fillMaxWidth(),
@@ -263,10 +284,20 @@ fun ReportCard(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // ▶️ Start Work
+            // ▶️ START WORK BUTTON
             Button(
 
-                onClick = onStartWork,
+                onClick = {
+
+                    startClicked = true
+
+                    onStartWork()
+                },
+
+                enabled = !startClicked &&
+                        !isStarted &&
+                        !isVerificationPending &&
+                        !isCompleted,
 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = brown
@@ -274,7 +305,23 @@ fun ReportCard(
 
             ) {
 
-                Text("Start Work")
+                Text(
+
+                    when {
+
+                        isCompleted ->
+                            "Completed"
+
+                        isVerificationPending ->
+                            "Verification Pending"
+
+                        isStarted ->
+                            "Work Started"
+
+                        else ->
+                            "Start Work"
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -282,13 +329,37 @@ fun ReportCard(
             // 📤 Upload Completion Proof
             Text(
 
-                text = "Upload Completion Proof",
+                text = when {
 
-                color = brown,
+                    isCompleted ->
+                        "Completed"
+
+                    isVerificationPending ->
+                        "Proof Uploaded"
+
+                    else ->
+                        "Upload Completion Proof"
+                },
+
+                color = if (
+                    uploadClicked ||
+                    isVerificationPending
+                )
+                    Color.Gray
+                else
+                    brown,
 
                 fontWeight = FontWeight.Bold,
 
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(
+
+                    enabled = !uploadClicked &&
+                            !isVerificationPending &&
+                            !isCompleted
+
+                ) {
+
+                    uploadClicked = true
 
                     navController.navigate(
 
