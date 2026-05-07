@@ -24,7 +24,8 @@ class UploadViewModel : ViewModel() {
 
         lat: String,
 
-        lng: String
+        lng: String,
+        onSuccess: () -> Boolean
 
     ) {
 

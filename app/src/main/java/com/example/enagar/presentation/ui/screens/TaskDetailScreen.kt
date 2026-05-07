@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.net.Uri
-import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +23,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.graphics.scale
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -31,8 +32,6 @@ import com.example.enagar.presentation.viewModel.UploadViewModel
 import com.google.android.gms.location.*
 import java.io.File
 import java.io.FileOutputStream
-import androidx.core.graphics.scale
-import androidx.core.content.FileProvider
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,41 +40,61 @@ import java.util.Locale
 @SuppressLint("MissingPermission")
 @Composable
 fun TaskDetailScreen(
+
     navController: NavHostController,
+
     reportId: String
+
 ) {
 
     val context = LocalContext.current
 
-    val uploadViewModel: UploadViewModel = hiltViewModel()
+    val uploadViewModel: UploadViewModel =
+        hiltViewModel()
 
+    // 🖼 Selected Image
     var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
-    var cameraImageUri by remember {
+
         mutableStateOf<Uri?>(null)
     }
 
+    // 📸 Camera Image URI
+    var cameraImageUri by remember {
+
+        mutableStateOf<Uri?>(null)
+    }
+
+    // 📍 Location
     var latitude by remember {
+
         mutableStateOf("Fetching...")
     }
 
     var longitude by remember {
+
         mutableStateOf("Fetching...")
     }
 
+    // 🔄 Upload State
     var isUploading by remember {
+
         mutableStateOf(false)
     }
 
+    // 📍 Location Client
     val fusedLocationClient = remember {
-        LocationServices.getFusedLocationProviderClient(context)
+
+        LocationServices
+            .getFusedLocationProviderClient(context)
     }
 
-    // 🔥 Permission Launcher
+    // 🔐 Location Permission Launcher
     val permissionLauncher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
+
+            contract =
+                ActivityResultContracts.RequestPermission()
+
         ) { granted ->
 
             if (granted) {
@@ -91,21 +110,92 @@ fun TaskDetailScreen(
             } else {
 
                 Toast.makeText(
+
                     context,
+
                     "Location permission denied",
+
                     Toast.LENGTH_SHORT
+
+                ).show()
+            }
+        }
+    // 📸 Camera Launcher
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+
+            contract =
+                ActivityResultContracts.TakePicture()
+
+        ) { success ->
+
+            if (
+                success &&
+                cameraImageUri != null
+            ) {
+
+                selectedImageUri =
+                    cameraImageUri
+
+            } else {
+
+                Toast.makeText(
+
+                    context,
+
+                    "Camera capture failed",
+
+                    Toast.LENGTH_SHORT
+
                 ).show()
             }
         }
 
-    // 🔥 Auto Fetch Location
+    // 📸 Camera Permission Launcher
+    val cameraPermissionLauncher =
+        rememberLauncherForActivityResult(
+
+            contract =
+                ActivityResultContracts.RequestPermission()
+
+        ) { granted ->
+
+            if (granted) {
+
+                val uri =
+                    createImageUri(context)
+
+                cameraImageUri = uri
+
+                cameraLauncher.launch(uri)
+
+            } else {
+
+                Toast.makeText(
+
+                    context,
+
+                    "Camera permission denied",
+
+                    Toast.LENGTH_SHORT
+
+                ).show()
+            }
+        }
+
+    // 📍 Auto Fetch Location
     LaunchedEffect(Unit) {
 
         if (
+
             ContextCompat.checkSelfPermission(
+
                 context,
+
                 Manifest.permission.ACCESS_FINE_LOCATION
+
             ) == PackageManager.PERMISSION_GRANTED
+
         ) {
 
             getCurrentLocation(
@@ -124,30 +214,19 @@ fun TaskDetailScreen(
         }
     }
 
-    // 📸 Image Picker
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-
-        selectedImageUri = uri
-    }
-    val cameraLauncher =
+    // 🖼 Gallery Picker
+    val galleryLauncher =
         rememberLauncherForActivityResult(
 
             contract =
-                ActivityResultContracts.TakePicture()
+                ActivityResultContracts.GetContent()
 
-        ) { success ->
+        ) { uri ->
 
-            if (
-                success &&
-                cameraImageUri != null
-            ) {
-
-                selectedImageUri =
-                    cameraImageUri
-            }
+            selectedImageUri = uri
         }
+
+
 
     Scaffold(
 
@@ -168,18 +247,26 @@ fun TaskDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(
+                    rememberScrollState()
+                ),
 
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment =
+                Alignment.CenterHorizontally
 
         ) {
 
+            // 🆔 Report ID
             Text(
                 text = "Report ID: $reportId",
-                style = MaterialTheme.typography.titleMedium
+
+                style =
+                    MaterialTheme.typography.titleMedium
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
 
             // 📍 Location Card
             Card(
@@ -191,28 +278,43 @@ fun TaskDetailScreen(
                 ) {
 
                     Text(
+
                         text = "Current Location",
-                        style = MaterialTheme.typography.titleMedium
+
+                        style =
+                            MaterialTheme.typography.titleMedium
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
 
-                    Text(text = "Latitude : $latitude")
+                    Text(
+                        text = "Latitude : $latitude"
+                    )
 
-                    Spacer(modifier = Modifier.height(5.dp))
+                    Spacer(
+                        modifier = Modifier.height(5.dp)
+                    )
 
-                    Text(text = "Longitude : $longitude")
+                    Text(
+                        text = "Longitude : $longitude"
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
 
-            // 📷 Choose Image
+            // 📷 Gallery + Camera Buttons
             Row(
+
                 modifier = Modifier.fillMaxWidth(),
 
                 horizontalArrangement =
                     Arrangement.spacedBy(12.dp)
+
             ) {
 
                 // 🖼 Gallery
@@ -220,7 +322,9 @@ fun TaskDetailScreen(
 
                     onClick = {
 
-                        launcher.launch("image/*")
+                        galleryLauncher.launch(
+                            "image/*"
+                        )
                     },
 
                     modifier = Modifier.weight(1f)
@@ -240,7 +344,26 @@ fun TaskDetailScreen(
 
                         cameraImageUri = uri
 
-                        cameraLauncher.launch(uri)
+                        if (
+
+                            ContextCompat.checkSelfPermission(
+
+                                context,
+
+                                Manifest.permission.CAMERA
+
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                        ) {
+
+                            cameraLauncher.launch(uri)
+
+                        } else {
+
+                            cameraPermissionLauncher.launch(
+                                Manifest.permission.CAMERA
+                            )
+                        }
                     },
 
                     modifier = Modifier.weight(1f)
@@ -251,24 +374,32 @@ fun TaskDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
             // 🖼 Preview Image
             selectedImageUri?.let { uri ->
 
                 Image(
-                    painter = rememberAsyncImagePainter(uri),
+
+                    painter =
+                        rememberAsyncImagePainter(uri),
+
                     contentDescription = null,
 
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp),
 
-                    contentScale = ContentScale.Crop
+                    contentScale =
+                        ContentScale.Crop
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(
+                modifier = Modifier.height(30.dp)
+            )
 
             // 🚀 Upload Button
             Button(
@@ -278,23 +409,34 @@ fun TaskDetailScreen(
                     if (selectedImageUri == null) {
 
                         Toast.makeText(
+
                             context,
+
                             "Please select image",
+
                             Toast.LENGTH_SHORT
+
                         ).show()
 
                         return@Button
                     }
 
                     if (
+
                         latitude == "Fetching..." ||
+
                         longitude == "Fetching..."
+
                     ) {
 
                         Toast.makeText(
+
                             context,
+
                             "Location not available yet",
+
                             Toast.LENGTH_SHORT
+
                         ).show()
 
                         return@Button
@@ -304,33 +446,41 @@ fun TaskDetailScreen(
 
                     val compressedFile =
                         compressImage(
+
                             context,
+
                             selectedImageUri!!
                         )
 
                     uploadViewModel.uploadProof(
+
                         context = context,
+
                         reportId = reportId,
+
                         file = compressedFile,
+
                         lat = latitude,
-                        lng = longitude
+
+                        lng = longitude,
+
+                        onSuccess = {
+
+                            isUploading = false
+
+                            Toast.makeText(
+
+                                context,
+
+                                "Completion Proof Uploaded",
+
+                                Toast.LENGTH_SHORT
+
+                            ).show()
+
+                            navController.popBackStack()
+                        }
                     )
-
-                    Toast.makeText(
-                        context,
-                        "Uploading...",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // 🔥 Delay navigation slightly
-                    android.os.Handler(
-                        Looper.getMainLooper()
-                    ).postDelayed({
-
-                        isUploading = false
-                        navController.popBackStack()
-
-                    }, 3000)
                 },
 
                 modifier = Modifier.fillMaxWidth(),
@@ -352,11 +502,16 @@ fun TaskDetailScreen(
 }
 
 
-// 🔥 Get Current Location
+// 📍 Get Current Location
 @SuppressLint("MissingPermission")
 fun getCurrentLocation(
-    fusedLocationClient: FusedLocationProviderClient,
-    onLocationReceived: (String, String) -> Unit
+
+    fusedLocationClient:
+    FusedLocationProviderClient,
+
+    onLocationReceived:
+        (String, String) -> Unit
+
 ) {
 
     fusedLocationClient.lastLocation
@@ -365,7 +520,9 @@ fun getCurrentLocation(
             if (location != null) {
 
                 onLocationReceived(
+
                     location.latitude.toString(),
+
                     location.longitude.toString()
                 )
 
@@ -378,7 +535,9 @@ fun getCurrentLocation(
                             Priority.PRIORITY_HIGH_ACCURACY
 
                         interval = 1000
+
                         fastestInterval = 500
+
                         numUpdates = 1
                     }
 
@@ -389,7 +548,9 @@ fun getCurrentLocation(
                     object : LocationCallback() {
 
                         override fun onLocationResult(
+
                             result: LocationResult
+
                         ) {
 
                             val freshLocation =
@@ -398,7 +559,9 @@ fun getCurrentLocation(
                             if (freshLocation != null) {
 
                                 onLocationReceived(
+
                                     freshLocation.latitude.toString(),
+
                                     freshLocation.longitude.toString()
                                 )
                             }
@@ -408,28 +571,26 @@ fun getCurrentLocation(
                         }
                     },
 
-                    Looper.getMainLooper()
+                    android.os.Looper.getMainLooper()
                 )
             }
         }
 }
 
 
-// 🔥 Compress Image
+// 🖼 Compress Large Images
 fun compressImage(
     context: Context,
     uri: Uri
 ): File {
 
-    // 📥 Open Input Stream
     val inputStream =
-        context.contentResolver.openInputStream(uri)
+        context.contentResolver
+            .openInputStream(uri)
 
-    // 🖼 Decode Original Bitmap
     val originalBitmap =
         BitmapFactory.decodeStream(inputStream)
 
-    // ✅ Resize Large Images
     val maxWidth = 1080
     val maxHeight = 1080
 
@@ -442,7 +603,12 @@ fun compressImage(
     val ratioMax =
         maxWidth.toFloat() / maxHeight.toFloat()
 
-    if (height > maxHeight || width > maxWidth) {
+    if (
+
+        height > maxHeight ||
+        width > maxWidth
+
+    ) {
 
         if (ratioBitmap < ratioMax) {
 
@@ -465,11 +631,9 @@ fun compressImage(
         }
     }
 
-    // 🔥 Create Resized Bitmap
     val resizedBitmap =
         originalBitmap.scale(width, height)
 
-    // 📂 Temp File
     val file = File.createTempFile(
 
         "compressed_",
@@ -482,7 +646,6 @@ fun compressImage(
     val outputStream =
         FileOutputStream(file)
 
-    // 🔥 Strong Compression
     resizedBitmap.compress(
 
         Bitmap.CompressFormat.JPEG,
@@ -495,23 +658,25 @@ fun compressImage(
     outputStream.flush()
     outputStream.close()
 
-    // 🧹 Cleanup Memory
     originalBitmap.recycle()
     resizedBitmap.recycle()
 
     return file
-
-
 }
 
+
+// 📸 Create Camera Image URI
 fun createImageUri(
     context: Context
 ): Uri {
 
     val timeStamp =
         SimpleDateFormat(
+
             "yyyyMMdd_HHmmss",
+
             Locale.getDefault()
+
         ).format(Date())
 
     val imageFile = File(
@@ -525,7 +690,7 @@ fun createImageUri(
 
         context,
 
-        "${context.packageName}.provider",
+        context.packageName + ".provider",
 
         imageFile
     )
