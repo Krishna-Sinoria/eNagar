@@ -25,7 +25,10 @@ class UploadViewModel : ViewModel() {
         lat: String,
 
         lng: String,
-        onSuccess: () -> Boolean
+
+        onSuccess: () -> Unit,
+
+        onError: (String) -> Unit
 
     ) {
 
@@ -33,19 +36,16 @@ class UploadViewModel : ViewModel() {
 
             try {
 
-                // 🔐 Token
                 val token =
                     SessionManager(context).getToken()
 
                 Log.d("UPLOAD", "TOKEN = $token")
 
-                // 🖼 Image File
                 val requestFile =
                     file.readBytes().toRequestBody(
                         "image/*".toMediaTypeOrNull()
                     )
 
-                // 🔥 IMPORTANT
                 val imagePart =
                     MultipartBody.Part.createFormData(
 
@@ -56,7 +56,6 @@ class UploadViewModel : ViewModel() {
                         requestFile
                     )
 
-                // 📦 Other fields
                 val reportIdBody =
                     reportId.toRequestBody(
                         MultipartBody.FORM
@@ -72,7 +71,6 @@ class UploadViewModel : ViewModel() {
                         MultipartBody.FORM
                     )
 
-                // 🚀 API CALL
                 val response =
                     RetrofitClient.api.uploadProof(
 
@@ -87,21 +85,23 @@ class UploadViewModel : ViewModel() {
                         imagePart
                     )
 
-                // ✅ DEBUG RESPONSE
-                Log.d(
-                    "UPLOAD",
-                    "CODE = ${response.code()}"
-                )
+                Log.d("UPLOAD", "CODE = ${response.code()}")
 
-                Log.d(
-                    "UPLOAD",
-                    "BODY = ${response.body()}"
-                )
+                Log.d("UPLOAD", "BODY = ${response.body()}")
 
                 Log.d(
                     "UPLOAD",
                     "ERROR = ${response.errorBody()?.string()}"
                 )
+
+                if (response.isSuccessful) {
+
+                    onSuccess()
+
+                } else {
+
+                    onError("Upload failed")
+                }
 
             } catch (e: Exception) {
 
@@ -111,6 +111,10 @@ class UploadViewModel : ViewModel() {
                 )
 
                 e.printStackTrace()
+
+                onError(
+                    e.message ?: "Unknown error"
+                )
             }
         }
     }

@@ -2,8 +2,6 @@ package com.example.enagar.domain.models
 
 import com.google.gson.annotations.SerializedName
 
-
-
 data class Report(
 
     val _id: String,
@@ -27,6 +25,9 @@ data class Report(
     val assignedTeam: String?,
 
     val verificationStatus: String?,
+
+    // ❌ NEW
+    val rejectionMessage: String? = null,
 
     val submission_date: String?,
 

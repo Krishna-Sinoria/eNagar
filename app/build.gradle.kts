@@ -94,5 +94,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
 
+    // OpenStreetMap (osmdroid) — live tile map
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 
 }

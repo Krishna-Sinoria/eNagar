@@ -26,7 +26,8 @@ import com.example.enagar.presentation.navigation.Screen
  * Main screen for the Field Worker with Scaffold and Bottom Navigation bar.
  */
 @Composable
-fun MainFieldWorkerScreen(mainNavController: NavHostController) {
+fun MainFieldWorkerScreen(mainNavController: NavHostController,
+                          workerEmail: String) {
     val workerNavController = rememberNavController()
 
     Scaffold(
@@ -40,8 +41,8 @@ fun MainFieldWorkerScreen(mainNavController: NavHostController) {
             composable(Screen.FieldWorkerDashboard.route) {
                 FieldWorkerDashboardScreen(navController = mainNavController)
             }
-            composable(Screen.FieldWorkerNotifications.route) { FieldWorkerNotificationScreen() }
-            composable(Screen.FieldWorkerProfile.route) { FieldWorkerProfileScreen() }
+            composable(Screen.FieldWorkerNotifications.route) { FieldWorkerNotificationScreen(navController = mainNavController) }
+            composable(Screen.FieldWorkerProfile.route) { FieldWorkerProfileScreen(navController = mainNavController, workerEmail = workerEmail) }
         }
     }
 }

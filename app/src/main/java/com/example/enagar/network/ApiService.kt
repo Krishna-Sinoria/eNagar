@@ -1,5 +1,6 @@
 package com.example.enagar.network
 
+import com.example.enagar.domain.models.FieldWorkerTeam
 import com.example.enagar.domain.models.LoginRequest
 import com.example.enagar.domain.models.LoginResponse
 import com.example.enagar.domain.models.Report
@@ -121,7 +122,8 @@ interface ApiService {
     ): Response<SimpleResponse>
 
 
-
+    @GET("api/teams")
+    suspend fun getTeams(): Response<List<FieldWorkerTeam>>
 
     // User routes
 

@@ -8,12 +8,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.enagar.domain.models.IssueReportItem
+import com.example.enagar.domain.models.ReportResponse
 import com.example.enagar.network.RetrofitClient
 import com.example.enagar.utils.SessionManager
 import com.example.enagar.utils.createPartFromString
 import com.example.enagar.utils.prepareFilePart
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -25,336 +28,181 @@ class CitizenViewModel @Inject constructor(
     private val appContext: android.app.Application
 ) : ViewModel() {
 
-    // ✅ SUCCESS STATE
+    // ── MyReports: real API state ─────────────────────────────────────────────
+    private val _reports   = MutableStateFlow<List<ReportResponse>>(emptyList())
+    val reports: StateFlow<List<ReportResponse>> = _reports
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    // ── ReportIssue: compose state ────────────────────────────────────────────
     val isSuccess = mutableStateOf(false)
 
-    // ✅ LOADING STATE
-    val isLoading = mutableStateOf(false)
+    private val _issueReport = mutableStateOf(IssueReportItem())
+    val issueReport: State<IssueReportItem> = _issueReport
 
-    // ✅ ISSUE REPORT STATE
-    private val _issueReport =
-        mutableStateOf(IssueReportItem())
+    private val _description = mutableStateOf<String?>(null)
+    val description: State<String?> = _description
 
-    val issueReport: State<IssueReportItem> =
-        _issueReport
+    private val _reportId = mutableStateOf("")
+    val reportId: State<String> = _reportId
 
-    // ✅ DESCRIPTION
-    private val _description =
-        mutableStateOf<String?>(null)
+    // ── Setters — UNTOUCHED ───────────────────────────────────────────────────
+    fun setReportId(id: String)           { _reportId.value = id }
+    fun desriptionValue(desc: String?)    { _description.value = desc }
+    fun setImageUri(uri: Uri)             { _issueReport.value = issueReport.value.copy(imageUri = uri) }
+    fun setLocation(location: String)     { _issueReport.value = issueReport.value.copy(location = location) }
+    fun setDescription(description: String) { _issueReport.value = issueReport.value.copy(description = description) }
+    fun setIssueType(issueType: String)   { _issueReport.value = issueReport.value.copy(issueType = issueType) }
 
-    val description: State<String?> =
-        _description
-
-    // ✅ REPORT ID
-    private val _reportId =
-        mutableStateOf("")
-
-    val reportId: State<String> =
-        _reportId
-
-    // ✅ SET REPORT ID
-    fun setReportId(id: String) {
-
-        _reportId.value = id
-    }
-
-    // ✅ DESCRIPTION VALUE
-    fun desriptionValue(desc: String?) {
-
-        _description.value = desc
-    }
-
-    // ✅ IMAGE
-    fun setImageUri(uri: Uri) {
-
-        _issueReport.value =
-            issueReport.value.copy(
-                imageUri = uri
-            )
-    }
-
-    // ✅ LOCATION
-    fun setLocation(location: String) {
-
-        _issueReport.value =
-            issueReport.value.copy(
-                location = location
-            )
-    }
-
-    // ✅ DESCRIPTION
-    fun setDescription(description: String) {
-
-        _issueReport.value =
-            issueReport.value.copy(
-                description = description
-            )
-    }
-
-    // ✅ ISSUE TYPE
-    fun setIssueType(issueType: String) {
-
-        _issueReport.value =
-            issueReport.value.copy(
-                issueType = issueType
-            )
-    }
-
-    // 🚀 MAIN REPORT FUNCTION
-    fun submitReportToBackend(
-
-        problemType: String,
-
-        description: String,
-
-        latitude: String,
-
-        longitude: String,
-
-        imageUri: Uri
-
-    ) {
-
+    // ── Fetch user reports from backend ───────────────────────────────────────
+    // API: GET /api/reports/user/{userId}
+    fun fetchUserReports(context: android.content.Context) {
         viewModelScope.launch {
-
+            _isLoading.value = true
+            _error.value     = null
             try {
+                val sessionManager = SessionManager(appContext)
+                val userId         = sessionManager.getUserId()
 
-                isLoading.value = true
+                if (userId.isNullOrBlank()) {
+                    _error.value     = "User not logged in. Please sign in again."
+                    _isLoading.value = false
+                    return@launch
+                }
 
-                Log.d(
-                    "API_DEBUG",
-                    "🚀 FUNCTION CALLED"
-                )
+                Log.d("CitizenVM", "Fetching reports for userId: $userId")
 
-                // ✅ GET USER TOKEN
-                val sessionManager =
-                    SessionManager(appContext)
+                val response = RetrofitClient.api.getUserReports(userId)
 
-                val token =
-                    sessionManager.getUserToken()
+                Log.d("REPORT_DEBUG", "Code = ${response.code()}")
+                Log.d("REPORT_DEBUG", "Message = ${response.message()}")
+                if (response.isSuccessful) {
+                    val body = response.body() ?: emptyList()
+                    _reports.value = body
+                    Log.d("CitizenVM", "Fetched ${body.size} reports")
+                } else {
+                    val errMsg = response.errorBody()?.string()
+                    _error.value = "Failed to load reports (${response.code()})"
+                    Log.e("CitizenVM", "Error ${response.code()}: $errMsg")
+                }
+            } catch (e: Exception) {
+                _error.value = "Network error: ${e.localizedMessage}"
+                Log.e("CitizenVM", "Exception: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
-                Log.d(
-                    "TOKEN_DEBUG",
-                    token
-                )
+    // ── Submit report to backend — UNTOUCHED ──────────────────────────────────
+    fun submitReportToBackend(
+        problemType: String,
+        description: String,
+        latitude:    String,
+        longitude:   String,
+        imageUri:    Uri
+    ) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
 
-                // ✅ IMAGE PROCESSING
-                val optimizedFile =
-                    withContext(Dispatchers.IO) {
+                Log.d("API_DEBUG", "🚀 FUNCTION CALLED")
 
-                        val inputStream =
-                            appContext.contentResolver
-                                .openInputStream(imageUri)
+                val sessionManager = SessionManager(appContext)
+                val token          = sessionManager.getUserToken()
 
-                        val originalFile =
-                            File.createTempFile(
-                                "upload",
-                                ".jpg"
-                            )
+                Log.d("TOKEN_DEBUG", token ?: "null")
 
-                        inputStream?.use { input ->
+                // Image processing
+                val optimizedFile = withContext(Dispatchers.IO) {
+                    val inputStream  = appContext.contentResolver.openInputStream(imageUri)
+                    val originalFile = File.createTempFile("upload", ".jpg")
 
-                            originalFile.outputStream()
-                                .use { output ->
-
-                                    input.copyTo(output)
-                                }
+                    inputStream?.use { input ->
+                        originalFile.outputStream().use { output ->
+                            input.copyTo(output)
                         }
-
-                        Log.d(
-                            "API_DEBUG",
-                            "📸 Original Size: ${originalFile.length()}"
-                        )
-
-                        // ✅ DECODE IMAGE
-                        val options =
-                            BitmapFactory.Options()
-                                .apply {
-
-                                    inJustDecodeBounds = true
-                                }
-
-                        BitmapFactory.decodeFile(
-                            originalFile.absolutePath,
-                            options
-                        )
-
-                        // ✅ RESIZE HUGE IMAGE
-                        options.inSampleSize =
-                            calculateInSampleSize(
-                                options,
-                                1280,
-                                1280
-                            )
-
-                        options.inJustDecodeBounds =
-                            false
-
-                        val bitmap =
-                            BitmapFactory.decodeFile(
-                                originalFile.absolutePath,
-                                options
-                            )
-
-                        val compressedFile =
-                            File.createTempFile(
-                                "optimized",
-                                ".jpg"
-                            )
-
-                        val out =
-                            FileOutputStream(
-                                compressedFile
-                            )
-
-                        // ✅ COMPRESS IMAGE
-                        bitmap.compress(
-                            android.graphics.Bitmap
-                                .CompressFormat.JPEG,
-                            75,
-                            out
-                        )
-
-                        out.flush()
-
-                        out.close()
-
-                        Log.d(
-                            "API_DEBUG",
-                            "🗜️ Optimized Size: ${compressedFile.length()}"
-                        )
-
-                        compressedFile
                     }
 
-                // ✅ API CALL
-                val response =
-                    RetrofitClient.api.createReport(
+                    Log.d("API_DEBUG", "📸 Original Size: ${originalFile.length()}")
 
-                        token = "Bearer $token",
+                    val options = BitmapFactory.Options().apply {
+                        inJustDecodeBounds = true
+                    }
+                    BitmapFactory.decodeFile(originalFile.absolutePath, options)
 
-                        problemType =
-                            createPartFromString(
-                                problemType
-                            ),
+                    options.inSampleSize     = calculateInSampleSize(options, 1280, 1280)
+                    options.inJustDecodeBounds = false
 
-                        description =
-                            createPartFromString(
-                                description
-                            ),
+                    val bitmap         = BitmapFactory.decodeFile(originalFile.absolutePath, options)
+                    val compressedFile = File.createTempFile("optimized", ".jpg")
+                    val out            = FileOutputStream(compressedFile)
 
-                        latitude =
-                            createPartFromString(
-                                latitude
-                            ),
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, out)
+                    out.flush()
+                    out.close()
 
-                        longitude =
-                            createPartFromString(
-                                longitude
-                            ),
+                    Log.d("API_DEBUG", "🗜️ Optimized Size: ${compressedFile.length()}")
 
-                        image =
-                            prepareFilePart(
-                                "image",
-                                optimizedFile
-                            )
-                    )
+                    compressedFile
+                }
 
-                // ✅ HANDLE RESPONSE
+                // API call
+                val response = RetrofitClient.api.createReport(
+                    token       = "Bearer $token",
+                    problemType = createPartFromString(problemType),
+                    description = createPartFromString(description),
+                    latitude    = createPartFromString(latitude),
+                    longitude   = createPartFromString(longitude),
+                    image       = prepareFilePart("image", optimizedFile)
+                )
+
                 if (response.isSuccessful) {
-
                     response.body()?.let { report ->
-
-                        Log.d(
-                            "FULL_RESPONSE",
-                            report.toString()
-                        )
-
-                        Log.d(
-                            "REPORT_ID_DEBUG",
-                            "ID = ${report._id}"
-                        )
-
-                        // ✅ SAVE REPORT ID
-                        setReportId(
-                            report._id
-                        )
-
+                        Log.d("FULL_RESPONSE",    report.toString())
+                        Log.d("REPORT_ID_DEBUG", "ID = ${report._id}")
+                        setReportId(report._id)
                         isSuccess.value = true
                     }
-
                 } else {
-
-                    val errorBody =
-                        response.errorBody()?.string()
-
-                    Log.e(
-                        "API_ERROR",
-                        "❌ ERROR ${response.code()}: $errorBody"
-                    )
-
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("API_ERROR", "❌ ERROR ${response.code()}: $errorBody")
                     isSuccess.value = false
                 }
 
             } catch (e: Exception) {
-
-                Log.e(
-                    "API_EXCEPTION",
-                    "💥 EXCEPTION: ${e.message}",
-                    e
-                )
-
+                Log.e("API_EXCEPTION", "💥 EXCEPTION: ${e.message}", e)
                 isSuccess.value = false
-
             } finally {
-
-                isLoading.value = false
+                _isLoading.value = false
             }
         }
     }
 
-    // ✅ IMAGE RESIZE FUNCTION
+    // ── Image resize helper — UNTOUCHED ───────────────────────────────────────
     private fun calculateInSampleSize(
-
-        options: BitmapFactory.Options,
-
-        reqWidth: Int,
-
+        options:   BitmapFactory.Options,
+        reqWidth:  Int,
         reqHeight: Int
-
     ): Int {
-
-        val height = options.outHeight
-
-        val width = options.outWidth
-
+        val height       = options.outHeight
+        val width        = options.outWidth
         var inSampleSize = 1
 
-        if (
-            height > reqHeight ||
-            width > reqWidth
-        ) {
-
-            val halfHeight =
-                height / 2
-
-            val halfWidth =
-                width / 2
-
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth  = width / 2
             while (
-
-                (halfHeight / inSampleSize)
-                >= reqHeight &&
-
-                (halfWidth / inSampleSize)
-                >= reqWidth
-
+                (halfHeight / inSampleSize) >= reqHeight &&
+                (halfWidth  / inSampleSize) >= reqWidth
             ) {
-
                 inSampleSize *= 2
             }
         }
-
         return inSampleSize
     }
 }

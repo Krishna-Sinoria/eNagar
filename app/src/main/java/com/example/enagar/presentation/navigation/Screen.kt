@@ -26,7 +26,14 @@ sealed class Screen(val route: String) {
 
 
     // 👷 FIELD WORKER
-    object FieldWorkerMain : Screen("field_worker_main")
+    object FieldWorkerMain :
+        Screen("field_worker_main/{workerEmail}") {
+
+        fun createRoute(workerEmail: String): String {
+
+            return "field_worker_main/$workerEmail"
+        }
+    }
 
     object FieldWorkerDashboard :
         Screen("field_worker_dashboard")

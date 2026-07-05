@@ -67,10 +67,23 @@ fun NavGraph(
 
 
         // 👷 FIELD WORKER DASHBOARD
-        composable(Screen.FieldWorkerMain.route) {
+        composable(
+
+            route = Screen.FieldWorkerMain.route
+
+        ) { backStackEntry ->
+
+            val workerEmail =
+
+                backStackEntry.arguments
+                    ?.getString("workerEmail")
+                    ?: ""
 
             MainFieldWorkerScreen(
-                mainNavController = navController
+
+                mainNavController = navController,
+
+                workerEmail = workerEmail
             )
         }
 
